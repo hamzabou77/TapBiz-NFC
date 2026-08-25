@@ -31,3 +31,8 @@
   background: rgba(148, 163, 184, 0.7);
 }
 
+/* Hide any Netlify badge, footer, or injection */
+[href*="netlify.com"], [class*="netlify"] {
+  display: none !important;
+}
+
