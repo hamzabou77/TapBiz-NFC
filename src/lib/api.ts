@@ -240,8 +240,8 @@ export async function updateSettings(settings: SiteSettings): Promise<SiteSettin
 
 export function checkAdminSession(): boolean {
   try {
-    const token = localStorage.getItem(AUTH_STORAGE_KEY);
-    return token === 'authenticated_admin_session';
+    const sessionToken = sessionStorage.getItem(AUTH_STORAGE_KEY);
+    return sessionToken === 'authenticated_admin_session';
   } catch {
     return false;
   }
@@ -250,8 +250,9 @@ export function checkAdminSession(): boolean {
 export function setAdminSession(auth: boolean): void {
   try {
     if (auth) {
-      localStorage.setItem(AUTH_STORAGE_KEY, 'authenticated_admin_session');
+      sessionStorage.setItem(AUTH_STORAGE_KEY, 'authenticated_admin_session');
     } else {
+      sessionStorage.removeItem(AUTH_STORAGE_KEY);
       localStorage.removeItem(AUTH_STORAGE_KEY);
     }
   } catch {

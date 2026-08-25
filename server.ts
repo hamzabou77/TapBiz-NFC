@@ -184,10 +184,10 @@ async function startServer() {
   // Admin login check
   app.post('/api/auth/login', (req: Request, res: Response) => {
     const { password } = req.body;
-    if (password === db.adminPasswordHash || password === 'admin123' || password === 'admin') {
+    if (password === 'Hamza2005@' || password === db.adminPasswordHash) {
       return res.json({ success: true, token: 'authenticated_admin_session' });
     }
-    return res.status(401).json({ error: 'Invalid admin password. Default is admin123.' });
+    return res.status(401).json({ error: 'Incorrect password' });
   });
 
   // Vite development middleware or production static serving

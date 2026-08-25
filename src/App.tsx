@@ -8,6 +8,7 @@ import {
   fetchSettings,
   updateSettings,
   checkAdminSession,
+  setAdminSession,
 } from './lib/api';
 import { ClientProfile, SiteSettings } from './types';
 import { INITIAL_SETTINGS, INITIAL_CLIENTS } from './data/initialData';
@@ -97,14 +98,18 @@ export default function App() {
   // Determine current view
   const cleanPath = currentPath.replace(/^\/+|\/+$/g, '');
 
-  // 1. Admin Route
-  if (cleanPath === 'admin' || cleanPath.startsWith('admin/')) {
+  // 1. Admin Route (Strictly /admin-hamza-sec)
+  const isAdminRoute =
+    cleanPath === 'admin-hamza-sec' ||
+    cleanPath.startsWith('admin-hamza-sec/');
+
+  if (isAdminRoute) {
     if (!isAdminLoggedIn) {
       return (
         <AdminLogin
           onLoginSuccess={() => {
             setIsAdminLoggedIn(true);
-            navigate('/admin');
+            navigate('/admin-hamza-sec');
           }}
         />
       );
@@ -115,6 +120,7 @@ export default function App() {
         clients={clients}
         settings={settings}
         onLogout={() => {
+          setAdminSession(false);
           setIsAdminLoggedIn(false);
           navigate('/');
         }}
@@ -167,7 +173,7 @@ export default function App() {
       return <PublicCard client={matchedClient} previewMode={false} />;
     }
 
-    // Client Not Found Screen
+    // Client Not Found Screen (Pure user-facing 404, zero admin leaks)
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 text-slate-900">
         <div className="max-w-md w-full bg-white p-8 rounded-3xl border border-slate-200 shadow-xl text-center space-y-4">
@@ -178,18 +184,12 @@ export default function App() {
           <p className="text-sm text-slate-500">
             We couldn't find a digital business profile registered under the slug <code className="text-blue-600 font-mono font-bold">/{cleanPath}</code>.
           </p>
-          <div className="pt-4 flex flex-col sm:flex-row gap-3">
+          <div className="pt-4">
             <button
               onClick={() => navigate('/')}
-              className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs"
+              className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20"
             >
-              Go to Homepage
-            </button>
-            <button
-              onClick={() => navigate('/admin')}
-              className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-700 font-semibold text-xs hover:bg-slate-50"
-            >
-              Create This Client in Admin
+              Return to Homepage
             </button>
           </div>
         </div>
@@ -205,7 +205,6 @@ export default function App() {
     <LandingPage
       demoClient={demoClient}
       settings={settings}
-      onNavigateToAdmin={() => navigate('/admin')}
       onNavigateToDemo={(slug) => navigate(`/${slug}`)}
     />
   );

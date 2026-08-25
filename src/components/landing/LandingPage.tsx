@@ -29,14 +29,12 @@ import { PublicCard } from '../public/PublicCard';
 interface LandingPageProps {
   demoClient: ClientProfile;
   settings: SiteSettings;
-  onNavigateToAdmin: () => void;
   onNavigateToDemo: (slug: string) => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
   demoClient,
   settings,
-  onNavigateToAdmin,
   onNavigateToDemo,
 }) => {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
@@ -117,18 +115,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </nav>
 
           <div className="flex items-center gap-3">
-            <button
-              id="admin-login-nav-btn"
-              onClick={onNavigateToAdmin}
-              className="flex items-center gap-1.5 py-2 px-3.5 rounded-xl text-slate-700 hover:text-blue-600 hover:bg-slate-100 text-xs font-bold border border-slate-200 transition-all"
-            >
-              <Lock className="w-3.5 h-3.5" />
-              <span>Admin Portal</span>
-            </button>
-
             <a
               href="#pricing"
-              className="hidden sm:inline-flex items-center justify-center py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all active:scale-98"
+              className="inline-flex items-center justify-center py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition-all active:scale-98"
             >
               Get Your NFC Card
             </a>
