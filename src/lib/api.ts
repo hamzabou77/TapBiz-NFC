@@ -6,42 +6,59 @@ const SETTINGS_STORAGE_KEY = 'smartnfc_settings_db_v1';
 const AUTH_STORAGE_KEY = 'smartnfc_admin_session_v1';
 
 /**
- * Normalizes a database row into a strictly typed ClientProfile
+ * Normalizes a database row into a strictly typed ClientProfile.
+ * Parses the 'data' JSONB column when present.
  */
 function mapRowToClient(row: any): ClientProfile {
+  let p = row;
+  if (row && row.data !== undefined && row.data !== null) {
+    if (typeof row.data === 'string') {
+      try {
+        p = JSON.parse(row.data);
+      } catch {
+        p = row.data;
+      }
+    } else if (typeof row.data === 'object') {
+      p = row.data;
+    }
+  }
+
+  const slug = String(p.slug || row.slug || '').toLowerCase().trim();
+  const id = String(p.id || row.id || `client-${slug || Date.now()}`);
+
   return {
-    id: String(row.id || ''),
-    business_name: String(row.business_name || 'Business Name'),
-    slug: String(row.slug || '').toLowerCase().trim(),
-    logo: String(row.logo || ''),
-    cover_image: row.cover_image ? String(row.cover_image) : '',
-    tagline: row.tagline ? String(row.tagline) : '',
-    description: String(row.description || ''),
-    phone: String(row.phone || ''),
-    whatsapp: String(row.whatsapp || row.phone || ''),
-    email: String(row.email || ''),
-    website: String(row.website || ''),
-    instagram: String(row.instagram || ''),
-    facebook: String(row.facebook || ''),
-    google_maps_url: String(row.google_maps_url || ''),
-    google_review_url: String(row.google_review_url || ''),
-    address: String(row.address || ''),
-    status: (row.status === 'inactive' ? 'inactive' : 'active') as 'active' | 'inactive',
-    views_count: typeof row.views_count === 'number' ? row.views_count : 0,
-    created_at: String(row.created_at || new Date().toISOString()),
-    updated_at: String(row.updated_at || new Date().toISOString()),
+    id,
+    business_name: String(p.business_name || 'Business Name'),
+    slug,
+    logo: String(p.logo || ''),
+    cover_image: p.cover_image ? String(p.cover_image) : '',
+    tagline: p.tagline ? String(p.tagline) : '',
+    description: String(p.description || ''),
+    phone: String(p.phone || ''),
+    whatsapp: String(p.whatsapp || p.phone || ''),
+    email: String(p.email || ''),
+    website: String(p.website || ''),
+    instagram: String(p.instagram || ''),
+    facebook: String(p.facebook || ''),
+    google_maps_url: String(p.google_maps_url || ''),
+    google_review_url: String(p.google_review_url || ''),
+    address: String(p.address || ''),
+    status: (p.status === 'inactive' ? 'inactive' : 'active') as 'active' | 'inactive',
+    views_count: typeof p.views_count === 'number' ? p.views_count : 0,
+    created_at: String(p.created_at || row.created_at || new Date().toISOString()),
+    updated_at: String(p.updated_at || row.updated_at || new Date().toISOString()),
   };
 }
 
 /**
  * Fetches all client profiles dynamically from Supabase `profiles` table.
+ * Parses the 'data' JSONB column for each profile.
  */
 export async function fetchClients(): Promise<ClientProfile[]> {
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .select('*');
 
     if (error) {
       console.warn('Supabase fetchClients error:', error.message);
@@ -55,7 +72,9 @@ export async function fetchClients(): Promise<ClientProfile[]> {
     }
 
     if (data && Array.isArray(data)) {
-      return data.map(mapRowToClient);
+      const mapped = data.map(mapRowToClient);
+      // Sort newest first
+      return mapped.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
     return [];
   } catch (err) {
@@ -66,6 +85,7 @@ export async function fetchClients(): Promise<ClientProfile[]> {
 
 /**
  * Fetches a single client profile by its unique slug directly from Supabase `profiles` table.
+ * Parses and returns the 'data' JSONB object.
  */
 export async function fetchClientBySlug(slug: string): Promise<ClientProfile | null> {
   const cleanSlug = slug.toLowerCase().trim();
@@ -99,7 +119,7 @@ export async function fetchClientBySlug(slug: string): Promise<ClientProfile | n
 }
 
 /**
- * Upserts a client profile into the Supabase `profiles` table using the slug as unique key.
+ * Upserts a client profile into the Supabase `profiles` table using { slug, data: profileData }.
  */
 export async function createClient(
   clientData: Omit<ClientProfile, 'id' | 'created_at' | 'updated_at'>
@@ -108,7 +128,7 @@ export async function createClient(
   const now = new Date().toISOString();
   const newId = 'client-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7);
 
-  const payload = {
+  const profileData: ClientProfile = {
     id: newId,
     business_name: clientData.business_name.trim(),
     slug: cleanSlug,
@@ -134,9 +154,14 @@ export async function createClient(
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .upsert(payload, { onConflict: 'slug' })
-      .select()
-      .single();
+      .upsert(
+        {
+          slug: profileData.slug,
+          data: profileData,
+        },
+        { onConflict: 'slug' }
+      )
+      .select();
 
     if (error) {
       console.error('Supabase createClient error:', error.message);
@@ -144,7 +169,7 @@ export async function createClient(
       const res = await fetch('/api/clients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(profileData),
       });
       if (res.ok) {
         const json = await res.json();
@@ -153,7 +178,10 @@ export async function createClient(
       throw new Error(error.message || 'Failed to save profile to Supabase');
     }
 
-    return mapRowToClient(data || payload);
+    if (data && data.length > 0) {
+      return mapRowToClient(data[0]);
+    }
+    return profileData;
   } catch (err: any) {
     console.error('Error in createClient:', err);
     throw new Error(err.message || 'Failed to create client in Supabase database');
@@ -161,49 +189,71 @@ export async function createClient(
 }
 
 /**
- * Updates an existing client profile in Supabase `profiles` table.
+ * Updates an existing client profile in Supabase `profiles` table using { slug, data: updatedProfile }.
  */
 export async function updateClient(
   id: string,
   clientData: Partial<ClientProfile>
 ): Promise<ClientProfile> {
-  const updatePayload: Record<string, any> = {
+  const cleanSlug = (clientData.slug || '').toLowerCase().trim().replace(/[^a-z0-9-_]/g, '-');
+
+  // Find current profile to merge cleanly
+  let existing: ClientProfile | null = null;
+  if (cleanSlug) {
+    existing = await fetchClientBySlug(cleanSlug);
+  }
+  if (!existing) {
+    const all = await fetchClients();
+    existing = all.find((c) => c.id === id || (cleanSlug && c.slug === cleanSlug)) || null;
+  }
+
+  const updatedProfile: ClientProfile = {
+    ...(existing || {
+      id,
+      business_name: 'Business Profile',
+      slug: cleanSlug || 'profile',
+      logo: '',
+      cover_image: '',
+      tagline: '',
+      description: '',
+      phone: '',
+      whatsapp: '',
+      email: '',
+      website: '',
+      instagram: '',
+      facebook: '',
+      google_maps_url: '',
+      google_review_url: '',
+      address: '',
+      status: 'active',
+      views_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }),
     ...clientData,
+    id: existing?.id || id,
+    slug: cleanSlug || existing?.slug || id,
     updated_at: new Date().toISOString(),
   };
-
-  if (clientData.slug) {
-    updatePayload.slug = clientData.slug.toLowerCase().trim().replace(/[^a-z0-9-_]/g, '-');
-  }
 
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .update(updatePayload)
-      .match({ id })
-      .select()
-      .single();
+      .upsert(
+        {
+          slug: updatedProfile.slug,
+          data: updatedProfile,
+        },
+        { onConflict: 'slug' }
+      )
+      .select();
 
     if (error) {
-      // Fallback matching by slug if id was not matched
-      if (clientData.slug) {
-        const { data: slugData, error: slugErr } = await supabase
-          .from('profiles')
-          .update(updatePayload)
-          .match({ slug: clientData.slug })
-          .select()
-          .single();
-
-        if (!slugErr && slugData) {
-          return mapRowToClient(slugData);
-        }
-      }
-
       console.error('Supabase updateClient error:', error.message);
       const res = await fetch(`/api/clients/${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(clientData),
+        body: JSON.stringify(updatedProfile),
       });
       if (res.ok) {
         const json = await res.json();
@@ -212,7 +262,10 @@ export async function updateClient(
       throw new Error(error.message || 'Failed to update client in Supabase');
     }
 
-    return mapRowToClient(data || { id, ...clientData });
+    if (data && data.length > 0) {
+      return mapRowToClient(data[0]);
+    }
+    return updatedProfile;
   } catch (err: any) {
     console.error('Error in updateClient:', err);
     throw new Error(err.message || 'Failed to update client profile in database');
@@ -220,22 +273,33 @@ export async function updateClient(
 }
 
 /**
- * Deletes a client profile from Supabase by ID or slug.
+ * Deletes a client profile from Supabase by slug or ID.
  */
-export async function deleteClient(id: string): Promise<boolean> {
+export async function deleteClient(idOrSlug: string): Promise<boolean> {
   try {
-    const { error } = await supabase
+    const clean = idOrSlug.toLowerCase().trim();
+
+    // 1. Delete by slug match
+    await supabase
       .from('profiles')
       .delete()
-      .match({ id });
+      .eq('slug', clean);
 
-    if (error) {
-      console.warn('Supabase delete error:', error.message);
-      await fetch(`/api/clients/${encodeURIComponent(id)}`, { method: 'DELETE' }).catch(() => {});
+    // 2. If it was an id, also delete by looking up its slug
+    const all = await fetchClients();
+    const matched = all.find((c) => c.id === idOrSlug || c.slug === clean);
+    if (matched && matched.slug && matched.slug !== clean) {
+      await supabase
+        .from('profiles')
+        .delete()
+        .eq('slug', matched.slug);
     }
+
+    // Local server fallback deletion
+    await fetch(`/api/clients/${encodeURIComponent(idOrSlug)}`, { method: 'DELETE' }).catch(() => {});
     return true;
   } catch (err) {
-    console.error('Error deleting client:', err);
+    console.error('Error deleting client from Supabase:', err);
     return true;
   }
 }
@@ -243,15 +307,11 @@ export async function deleteClient(id: string): Promise<boolean> {
 /**
  * Toggles a client profile's active status in Supabase.
  */
-export async function toggleClientStatus(id: string): Promise<ClientProfile> {
-  const { data: current } = await supabase
-    .from('profiles')
-    .select('status')
-    .match({ id })
-    .maybeSingle();
-
+export async function toggleClientStatus(idOrSlug: string): Promise<ClientProfile> {
+  const all = await fetchClients();
+  const current = all.find((c) => c.id === idOrSlug || c.slug === idOrSlug);
   const newStatus = current?.status === 'active' ? 'inactive' : 'active';
-  return updateClient(id, { status: newStatus });
+  return updateClient(idOrSlug, { status: newStatus });
 }
 
 /**
@@ -262,18 +322,18 @@ export async function incrementClientView(slug: string): Promise<void> {
   if (!cleanSlug) return;
 
   try {
-    const { data: current } = await supabase
-      .from('profiles')
-      .select('views_count')
-      .eq('slug', cleanSlug)
-      .maybeSingle();
-
+    const current = await fetchClientBySlug(cleanSlug);
     if (current) {
-      const newCount = (current.views_count || 0) + 1;
+      current.views_count = (current.views_count || 0) + 1;
       await supabase
         .from('profiles')
-        .update({ views_count: newCount })
-        .eq('slug', cleanSlug);
+        .upsert(
+          {
+            slug: cleanSlug,
+            data: current,
+          },
+          { onConflict: 'slug' }
+        );
     }
   } catch {
     // Non-blocking view increment
