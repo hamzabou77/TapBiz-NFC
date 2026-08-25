@@ -1,0 +1,6 @@
+{
+  "name": "NFC Digital Business Card Platform",
+  "description": "Professional platform to create, manage, and distribute NFC digital business cards, interactive client profiles, QR codes, and vCard downloads.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
