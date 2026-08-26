@@ -2,8 +2,8 @@ import { ClientProfile, SiteSettings } from '../types';
 import { INITIAL_SETTINGS } from '../data/initialData';
 import { supabase } from './supabase';
 
-const SETTINGS_STORAGE_KEY = 'smartnfc_settings_db_v1';
-const AUTH_STORAGE_KEY = 'smartnfc_admin_session_v1';
+const SETTINGS_STORAGE_KEY = 'touchbizz_settings_db_v1';
+const AUTH_STORAGE_KEY = 'touchbizz_admin_session_v1';
 
 /**
  * Normalizes a database row into a strictly typed ClientProfile.

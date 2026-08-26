@@ -212,7 +212,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </h3>
 
         <p className="text-xs text-slate-300 leading-relaxed">
-          When you connect your custom domain (e.g. <code className="text-blue-300">smartnfc.ma</code> or <code className="text-blue-300">mydomain.com</code>), all generated client URLs like <code className="text-blue-300">https://smartnfc.ma/ahmed-car-rental</code> work automatically.
+          When you connect your custom domain (e.g. <code className="text-blue-300">touchbizz.ma</code> or <code className="text-blue-300">mydomain.com</code>), all generated client URLs like <code className="text-blue-300">https://touchbizz.ma/ahmed-car-rental</code> work automatically.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">

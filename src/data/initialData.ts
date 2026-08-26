@@ -70,13 +70,13 @@ export const INITIAL_CLIENTS: ClientProfile[] = [
 ];
 
 export const INITIAL_SETTINGS: SiteSettings = {
-  site_name: 'SmartNFC Morocco',
-  tagline: 'Your Business Card. One Tap Away.',
+  site_name: 'Touchbizz',
+  tagline: 'Digital Profile Platform',
   contact_phone: '+212 660 000 111',
   contact_whatsapp: '+212660000111',
-  contact_email: 'contact@smartnfc.ma',
+  contact_email: 'contact@touchbizz.ma',
   currency: 'MAD',
-  custom_domain: 'https://smartnfc.ma',
+  custom_domain: 'https://touchbizz.ma',
   pricing_plans: [
     {
       id: 'plan-basic',

@@ -355,7 +355,7 @@ export const PublicCard: React.FC<PublicCardProps> = ({ client, previewMode = fa
             </div>
           )}
 
-          {/* FOOTER / POWERED BY SMART NFC */}
+          {/* FOOTER / POWERED BY TOUCHBIZZ */}
           <div className="mt-8 pt-4 border-t border-slate-100 flex flex-col items-center justify-center text-center">
             <a
               id="powered-by-nfc-link"
@@ -363,7 +363,7 @@ export const PublicCard: React.FC<PublicCardProps> = ({ client, previewMode = fa
               className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-600 font-medium transition-colors"
             >
               <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-              <span>Smart NFC Digital Card Platform</span>
+              <span>Touchbizz Digital Profile Platform</span>
             </a>
             <div className="text-[10px] text-slate-400 mt-1">
               Tap card or scan QR to connect instantly

@@ -1,0 +1,139 @@
+{
+  "clients": [
+    {
+      "id": "client-1",
+      "business_name": "Ahmed Car Rental",
+      "slug": "ahmed-car-rental",
+      "logo": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&auto=format&fit=crop&q=80",
+      "cover_image": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1000&auto=format&fit=crop&q=80",
+      "tagline": "Premium & Economy Car Rental in Marrakech & Casablanca",
+      "description": "Luxury SUVs, sedans, and economy vehicles with 24/7 airport pick-up & delivery, full insurance, and zero hidden fees across Morocco.",
+      "phone": "+212661234567",
+      "whatsapp": "+212661234567",
+      "email": "contact@ahmedcarrental.ma",
+      "website": "https://ahmedcarrental.ma",
+      "instagram": "https://instagram.com/ahmedcarrental.ma",
+      "facebook": "https://facebook.com/ahmedcarrentalmaroc",
+      "google_maps_url": "https://maps.google.com/?q=Avenue+Mohammed+VI+Gueliz+Marrakech",
+      "google_review_url": "https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4",
+      "address": "Avenue Mohammed VI, Guéliz, Marrakech 40000, Morocco",
+      "status": "active",
+      "views_count": 342,
+      "created_at": "2025-01-15T10:00:00.000Z",
+      "updated_at": "2025-02-10T14:30:00.000Z"
+    },
+    {
+      "id": "client-2",
+      "business_name": "Yassine Private Driver & Rental",
+      "slug": "yassine-rental",
+      "logo": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
+      "cover_image": "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1000&auto=format&fit=crop&q=80",
+      "tagline": "VIP Airport Transfers & Desert Excursions",
+      "description": "Private chauffeur services, airport shuttles, and customized luxury day trips to Agafay, Ourika Valley, and Essaouira.",
+      "phone": "+212662987654",
+      "whatsapp": "+212662987654",
+      "email": "booking@yassinerental.com",
+      "website": "https://yassinerental.com",
+      "instagram": "https://instagram.com/yassine_transfers",
+      "facebook": "https://facebook.com/yassinetransport",
+      "google_maps_url": "https://maps.google.com/?q=Marrakech+Menara+Airport",
+      "google_review_url": "https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4",
+      "address": "Hivernage, Marrakech 40000, Morocco",
+      "status": "active",
+      "views_count": 189,
+      "created_at": "2025-01-20T11:20:00.000Z",
+      "updated_at": "2025-02-15T09:15:00.000Z"
+    },
+    {
+      "id": "client-3",
+      "business_name": "Marrakech Luxury Cars",
+      "slug": "marrakech-cars",
+      "logo": "https://images.unsplash.com/photo-1563720223185-11003d516935?w=400&auto=format&fit=crop&q=80",
+      "cover_image": "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=1000&auto=format&fit=crop&q=80",
+      "tagline": "High-End Supercars & Executive Fleet",
+      "description": "Exclusive Range Rover, Porsche, and Mercedes G-Wagon rentals for weddings, VIP events, and corporate luxury travel in Morocco.",
+      "phone": "+212665112233",
+      "whatsapp": "+212665112233",
+      "email": "info@marrakechluxurycars.ma",
+      "website": "https://marrakechluxurycars.ma",
+      "instagram": "https://instagram.com/marrakechluxurycars",
+      "facebook": "https://facebook.com/marrakechluxurycars",
+      "google_maps_url": "https://maps.google.com/?q=Boulevard+Al+Massira+Al+Khadra+Casablanca",
+      "google_review_url": "https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4",
+      "address": "Boulevard Al Massira Al Khadra, Casablanca, Morocco",
+      "status": "active",
+      "views_count": 275,
+      "created_at": "2025-02-01T15:00:00.000Z",
+      "updated_at": "2025-02-18T16:45:00.000Z"
+    }
+  ],
+  "settings": {
+    "site_name": "Touchbizz",
+    "tagline": "Digital Profile Platform",
+    "contact_phone": "+212 660 000 111",
+    "contact_whatsapp": "+212660000111",
+    "contact_email": "contact@touchbizz.ma",
+    "currency": "MAD",
+    "custom_domain": "https://touchbizz.ma",
+    "pricing_plans": [
+      {
+        "id": "plan-basic",
+        "name": "Basic",
+        "price": 299,
+        "currency": "MAD",
+        "billing_period": "one-time payment",
+        "popular": false,
+        "description": "Ideal for solo entrepreneurs and professionals getting started with NFC networking.",
+        "features": [
+          "1x Custom Printed Matte NFC Card",
+          "Mobile-Optimized Digital Profile",
+          "Custom Unique URL Slug (e.g. /your-name)",
+          "Dynamic QR Code included",
+          "One-Tap \"Save Contact\" (.vcf)",
+          "Unlimited Profile Updates Anytime",
+          "Standard Email Support"
+        ]
+      },
+      {
+        "id": "plan-pro",
+        "name": "Professional",
+        "price": 490,
+        "currency": "MAD",
+        "billing_period": "one-time payment",
+        "popular": true,
+        "description": "The most popular choice for businesses, shops, car rentals, and service agencies.",
+        "features": [
+          "1x Premium NFC Card (Matte Black / Gloss Metallic)",
+          "Full Interactive Digital Business Profile",
+          "Google Review 5-Star Direct Button",
+          "Google Maps Location One-Tap Navigation",
+          "Direct WhatsApp & Instant Call Triggers",
+          "Social Media Links (Instagram, FB, Web)",
+          "High-Resolution Vector QR Code Download",
+          "Free NFC URL reprogramming guide",
+          "Priority WhatsApp Support"
+        ]
+      },
+      {
+        "id": "plan-business",
+        "name": "Business Pack",
+        "price": 990,
+        "currency": "MAD",
+        "billing_period": "one-time pack (3 Cards)",
+        "popular": false,
+        "description": "Perfect for teams, car rental agencies with multiple drivers, and executive offices.",
+        "features": [
+          "3x Custom Branded NFC Cards with Logo",
+          "3 Distinct Digital Profiles & Slugs",
+          "Central Admin Dashboard to manage all profiles",
+          "Google Reviews & Google Maps Direct Integration",
+          "Custom Brand Colors & Cover Banner",
+          "Print-Ready QR Code Standee PDF Generator",
+          "Lifetime Profile Hosting (Zero Monthly Fees)",
+          "Dedicated VIP Account Manager"
+        ]
+      }
+    ]
+  },
+  "adminPasswordHash": "admin123"
+}
