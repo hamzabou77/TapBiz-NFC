@@ -15,6 +15,8 @@ export const INITIAL_CLIENTS: ClientProfile[] = [
     website: 'https://ahmedcarrental.ma',
     instagram: 'https://instagram.com/ahmedcarrental.ma',
     facebook: 'https://facebook.com/ahmedcarrentalmaroc',
+    tiktok: 'https://tiktok.com/@ahmedcarrental',
+    linkedin: 'https://linkedin.com/company/ahmedcarrental',
     google_maps_url: 'https://maps.google.com/?q=Avenue+Mohammed+VI+Gueliz+Marrakech',
     google_review_url: 'https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4',
     address: 'Avenue Mohammed VI, Guéliz, Marrakech 40000, Morocco',

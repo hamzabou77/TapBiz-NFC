@@ -12,6 +12,10 @@ export interface ClientProfile {
   website: string;
   instagram: string;
   facebook: string;
+  tiktok?: string;
+  tiktok_url?: string;
+  linkedin?: string;
+  linkedin_url?: string;
   google_maps_url: string;
   google_review_url: string;
   address: string;

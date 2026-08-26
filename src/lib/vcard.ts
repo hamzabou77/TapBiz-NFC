@@ -39,6 +39,31 @@ function formatFacebookUrl(input: string): string {
 }
 
 /**
+ * Formats a TikTok handle or input into a full HTTPS link.
+ */
+function formatTikTokUrl(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  const cleanHandle = trimmed.replace(/^@/, '');
+  return `https://www.tiktok.com/@${cleanHandle}`;
+}
+
+/**
+ * Formats a LinkedIn handle or input into a full HTTPS link.
+ */
+function formatLinkedInUrl(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  return `https://www.linkedin.com/in/${trimmed}`;
+}
+
+/**
  * Generates a strictly sanitized vCard 3.0 string.
  *
  * Structure:
@@ -113,6 +138,26 @@ export function generateVCardString(client: ClientProfile): string {
     if (instagramUrl) {
       lines.push(`URL;TYPE=Instagram:${instagramUrl}`);
       lines.push(`X-SOCIALPROFILE;TYPE=instagram:${instagramUrl}`);
+    }
+  }
+
+  // TikTok Profile Link
+  const tiktokValue = client.tiktok?.trim() || client.tiktok_url?.trim();
+  if (tiktokValue) {
+    const tiktokUrl = formatTikTokUrl(tiktokValue);
+    if (tiktokUrl) {
+      lines.push(`URL;TYPE=TikTok:${tiktokUrl}`);
+      lines.push(`X-SOCIALPROFILE;TYPE=tiktok:${tiktokUrl}`);
+    }
+  }
+
+  // LinkedIn Profile Link
+  const linkedinValue = client.linkedin?.trim() || client.linkedin_url?.trim();
+  if (linkedinValue) {
+    const linkedinUrl = formatLinkedInUrl(linkedinValue);
+    if (linkedinUrl) {
+      lines.push(`URL;TYPE=LinkedIn:${linkedinUrl}`);
+      lines.push(`X-SOCIALPROFILE;TYPE=linkedin:${linkedinUrl}`);
     }
   }
 

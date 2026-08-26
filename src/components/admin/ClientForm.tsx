@@ -11,6 +11,7 @@ import {
   Star,
   Instagram,
   Facebook,
+  Linkedin,
   Sparkles,
   Link,
   Image as ImageIcon,
@@ -57,6 +58,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     website: '',
     instagram: '',
     facebook: '',
+    tiktok: '',
+    tiktok_url: '',
+    linkedin: '',
+    linkedin_url: '',
     google_maps_url: '',
     google_review_url: '',
     address: '',
@@ -83,6 +88,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({
         website: initialClient.website || '',
         instagram: initialClient.instagram || '',
         facebook: initialClient.facebook || '',
+        tiktok: initialClient.tiktok || initialClient.tiktok_url || '',
+        tiktok_url: initialClient.tiktok_url || initialClient.tiktok || '',
+        linkedin: initialClient.linkedin || initialClient.linkedin_url || '',
+        linkedin_url: initialClient.linkedin_url || initialClient.linkedin || '',
         google_maps_url: initialClient.google_maps_url || '',
         google_review_url: initialClient.google_review_url || '',
         address: initialClient.address || '',
@@ -156,6 +165,10 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     website: formData.website || 'https://mybusiness.ma',
     instagram: formData.instagram || 'https://instagram.com',
     facebook: formData.facebook || 'https://facebook.com',
+    tiktok: formData.tiktok_url || formData.tiktok || '',
+    tiktok_url: formData.tiktok_url || formData.tiktok || '',
+    linkedin: formData.linkedin_url || formData.linkedin || '',
+    linkedin_url: formData.linkedin_url || formData.linkedin || '',
     google_maps_url: formData.google_maps_url || 'https://maps.google.com',
     google_review_url:
       formData.google_review_url ||
@@ -519,6 +532,54 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                     value={formData.facebook}
                     onChange={(e) => setFormData({ ...formData, facebook: e.target.value })}
                     placeholder="https://facebook.com/business"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 text-sm outline-none transition-all"
+                  />
+                </div>
+
+                {/* TikTok Input */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <span className="w-3.5 h-3.5 flex items-center justify-center text-slate-900 leading-none">
+                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.33 6.33 0 0 0-1-.08A6.34 6.34 0 0 0 3 15.66a6.34 6.34 0 0 0 10.82 4.46 6.27 6.27 0 0 0 1.88-4.46V8.62a8.28 8.28 0 0 0 4.89 1.58V6.75a4.85 4.85 0 0 1-1-.06z" />
+                      </svg>
+                    </span>
+                    <span>TikTok Profile URL</span>
+                  </label>
+                  <input
+                    id="client-tiktok-input"
+                    type="url"
+                    value={formData.tiktok_url || formData.tiktok || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        tiktok_url: e.target.value,
+                        tiktok: e.target.value,
+                      })
+                    }
+                    placeholder="https://tiktok.com/@business"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 text-sm outline-none transition-all"
+                  />
+                </div>
+
+                {/* LinkedIn Input */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <Linkedin className="w-3.5 h-3.5 text-[#0A66C2]" />
+                    <span>LinkedIn Profile URL</span>
+                  </label>
+                  <input
+                    id="client-linkedin-input"
+                    type="url"
+                    value={formData.linkedin_url || formData.linkedin || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        linkedin_url: e.target.value,
+                        linkedin: e.target.value,
+                      })
+                    }
+                    placeholder="https://linkedin.com/company/business"
                     className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 text-sm outline-none transition-all"
                   />
                 </div>
