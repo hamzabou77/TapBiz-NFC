@@ -506,12 +506,21 @@ export const ProfileSimulator: React.FC<ProfileSimulatorProps> = ({ lang = 'fr' 
                     </p>
                   </div>
 
-                  {/* Location Badge with Map Icon */}
+                  {/* Location Badge with Map Icon (Clickable Google Maps link) */}
                   {location && (
-                    <div className="inline-flex items-center gap-1 text-[11px] text-slate-600 font-medium bg-slate-100/90 px-3 py-1 rounded-full border border-slate-200/60">
-                      <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
-                      <span>{location}</span>
-                    </div>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] text-slate-600 hover:text-slate-900 font-medium bg-slate-100/90 hover:bg-slate-200/90 px-3 py-1 rounded-full border border-slate-200/60 max-w-xs transition-colors cursor-pointer group shadow-2xs"
+                      title="Ouvrir dans Google Maps"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                    >
+                      <MapPin className="w-3 h-3 text-rose-500 shrink-0 group-hover:scale-110 transition-transform" />
+                      <span className="truncate">{location}</span>
+                    </a>
                   )}
 
                   {/* Bio */}

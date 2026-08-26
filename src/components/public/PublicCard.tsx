@@ -209,10 +209,17 @@ export const PublicCard: React.FC<PublicCardProps> = ({ client, previewMode = fa
           )}
 
           {(client.address || client.city) && (
-            <div className="mt-2 inline-flex items-center gap-1 text-[11px] text-slate-600 font-medium bg-slate-100/90 px-3 py-1 rounded-full border border-slate-200/60 max-w-xs mx-auto text-left shadow-2xs">
-              <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
+            <a
+              id="profile-address-link"
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.address || client.city || '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-[11px] text-slate-600 hover:text-slate-900 font-medium bg-slate-100/90 hover:bg-slate-200/90 px-3 py-1 rounded-full border border-slate-200/60 max-w-xs mx-auto text-left shadow-2xs transition-colors cursor-pointer group"
+              title="Ouvrir l'adresse dans Google Maps"
+            >
+              <MapPin className="w-3 h-3 text-rose-500 shrink-0 group-hover:scale-110 transition-transform" />
               <span className="truncate">{client.address || client.city}</span>
-            </div>
+            </a>
           )}
 
           {/* 3. PRIMARY CTA BUTTON: SAVE CONTACT TO PHONE */}
