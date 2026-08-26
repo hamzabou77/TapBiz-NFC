@@ -11,20 +11,23 @@ import {
   X,
   Sparkles,
   ChevronRight,
-  Globe
+  Globe,
+  ShoppingBag
 } from 'lucide-react';
-import { ClientProfile, SiteSettings } from '../../types';
+import { ClientProfile, SiteSettings, Product } from '../../types';
 import { DashboardOverview } from './DashboardOverview';
 import { ClientList } from './ClientList';
 import { ClientForm } from './ClientForm';
 import { NfcGuide } from './NfcGuide';
 import { SettingsView } from './SettingsView';
+import { ProductManagement } from './ProductManagement';
 import { setAdminSession } from '../../lib/api';
 
-type AdminTab = 'overview' | 'clients' | 'add-client' | 'edit-client' | 'nfc-guide' | 'settings';
+type AdminTab = 'overview' | 'clients' | 'products' | 'add-client' | 'edit-client' | 'nfc-guide' | 'settings';
 
 interface AdminLayoutProps {
   clients: ClientProfile[];
+  products: Product[];
   settings: SiteSettings;
   onLogout: () => void;
   onRefreshClients: () => Promise<void>;
@@ -32,18 +35,25 @@ interface AdminLayoutProps {
   onUpdateClient: (id: string, data: Partial<ClientProfile>) => Promise<void>;
   onDeleteClient: (id: string) => Promise<void>;
   onToggleStatus: (id: string) => Promise<void>;
+  onCreateProduct: (data: Omit<Product, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  onUpdateProduct: (id: string, data: Partial<Product>) => Promise<void>;
+  onDeleteProduct: (id: string) => Promise<void>;
   onSaveSettings: (settings: SiteSettings) => Promise<void>;
   onViewClientPublic: (slug: string) => void;
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
   clients,
+  products,
   settings,
   onLogout,
   onCreateClient,
   onUpdateClient,
   onDeleteClient,
   onToggleStatus,
+  onCreateProduct,
+  onUpdateProduct,
+  onDeleteProduct,
   onSaveSettings,
   onViewClientPublic,
 }) => {
@@ -72,6 +82,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const navItems = [
     { id: 'overview' as AdminTab, label: 'Overview', icon: LayoutDashboard },
     { id: 'clients' as AdminTab, label: 'Clients', icon: Users, badge: clients.length },
+    { id: 'products' as AdminTab, label: 'Boutique / Produits', icon: ShoppingBag, badge: products.length },
     { id: 'add-client' as AdminTab, label: 'Add Client', icon: UserPlus },
     { id: 'nfc-guide' as AdminTab, label: 'NFC Programming', icon: Radio },
     { id: 'settings' as AdminTab, label: 'Settings & Pricing', icon: Settings },
@@ -227,6 +238,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             onDelete={onDeleteClient}
             onToggleStatus={onToggleStatus}
             onViewClient={onViewClientPublic}
+          />
+        )}
+
+        {activeTab === 'products' && (
+          <ProductManagement
+            products={products}
+            settings={settings}
+            onCreateProduct={onCreateProduct}
+            onUpdateProduct={onUpdateProduct}
+            onDeleteProduct={onDeleteProduct}
           />
         )}
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Radio,
   Sparkles,
@@ -11,384 +11,649 @@ import {
   UserPlus,
   Compass,
   CheckCircle2,
+  Menu,
+  X,
+  ShoppingBag,
+  ShieldCheck,
+  RotateCcw,
+  Leaf,
+  Star,
+  Users,
+  Award,
+  ChevronDown,
+  HelpCircle,
+  Phone,
+  MapPin,
+  Lock,
+  Globe,
+  Truck,
+  Layers,
+  CreditCard
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
-import { ClientProfile, SiteSettings } from '../../types';
-import { PublicCard } from '../public/PublicCard';
-import { FEATURED_SHOWCASE_PROFILES } from '../../data/initialData';
-import { fetchClientBySlug } from '../../lib/api';
+import { motion, AnimatePresence } from 'motion/react';
+import { ClientProfile, SiteSettings, Product } from '../../types';
+import { ProfileSimulator } from './ProfileSimulator';
+import { ProductCatalog } from './ProductCatalog';
+import { ShowcaseSection } from './ShowcaseSection';
 
 interface LandingPageProps {
   demoClient: ClientProfile;
   settings: SiteSettings;
   clients?: ClientProfile[];
+  products?: Product[];
   onNavigateToDemo: (slug: string) => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
-  demoClient,
   settings,
   clients = [],
+  products = [],
   onNavigateToDemo,
 }) => {
-  const [fetchedHamzaProfile, setFetchedHamzaProfile] = useState<ClientProfile | null>(null);
-
-  // Directly fetch live Hamza profile from database / API / Supabase on mount
-  useEffect(() => {
-    let isMounted = true;
-    fetchClientBySlug('hamza')
-      .then((profile) => {
-        if (isMounted && profile) {
-          setFetchedHamzaProfile(profile);
-        }
-      })
-      .catch((err) => {
-        console.warn('Error fetching live Hamza profile for preview:', err);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // 4 Fixed featured showcase profiles linked dynamically to database/localStorage
-  const sampleProfiles: ClientProfile[] = FEATURED_SHOWCASE_PROFILES.map((baseProfile) => {
-    // 1. Dynamic sync for Hamza showcase profile
-    if (baseProfile.slug === 'hamza' || baseProfile.id === 'client-hamza') {
-      const liveHamza =
-        clients.find(
-          (c) =>
-            c.slug.toLowerCase() === 'hamza' ||
-            c.slug.toLowerCase() === 'hamza-touchbizz' ||
-            c.id === 'client-hamza' ||
-            c.business_name.toLowerCase().includes('hamza')
-        ) || fetchedHamzaProfile;
-
-      if (liveHamza) {
-        return {
-          ...baseProfile,
-          ...liveHamza,
-          business_name: liveHamza.business_name || baseProfile.business_name,
-          logo: liveHamza.logo || baseProfile.logo,
-          cover_image: liveHamza.cover_image || baseProfile.cover_image,
-          tagline: liveHamza.tagline !== undefined ? liveHamza.tagline : baseProfile.tagline,
-          description: liveHamza.description || baseProfile.description,
-          phone: liveHamza.phone || baseProfile.phone,
-          whatsapp: liveHamza.whatsapp || baseProfile.whatsapp,
-          email: liveHamza.email || baseProfile.email,
-          website: liveHamza.website || baseProfile.website,
-          instagram: liveHamza.instagram || baseProfile.instagram,
-          facebook: liveHamza.facebook || baseProfile.facebook,
-          tiktok: liveHamza.tiktok || baseProfile.tiktok,
-          linkedin: liveHamza.linkedin || baseProfile.linkedin,
-          google_maps_url: liveHamza.google_maps_url || baseProfile.google_maps_url,
-          google_review_url: liveHamza.google_review_url || baseProfile.google_review_url,
-          address: liveHamza.address || baseProfile.address,
-        };
-      }
-    }
-
-    // 2. Dynamic sync for other featured profiles if updated in database
-    const dynamicMatch = clients.find(
-      (c) => c.slug.toLowerCase() === baseProfile.slug.toLowerCase() || c.id === baseProfile.id
-    );
-    if (dynamicMatch) {
-      return {
-        ...baseProfile,
-        ...dynamicMatch,
-      };
-    }
-
-    return baseProfile;
-  });
-
-  const [selectedSlug, setSelectedSlug] = useState<string>(sampleProfiles[0]?.slug || 'hamza');
-
-  const currentSample =
-    sampleProfiles.find((c) => c.slug === selectedSlug) || sampleProfiles[0];
+  const [lang, setLang] = useState<'fr' | 'en'>('fr');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const scrollToSection = (id: string) => {
+    setMobileMenuOpen(false);
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  const cleanWhatsapp = (settings.contact_whatsapp || '+212620799395').replace(/[^0-9]/g, '');
+  const whatsappPhone = (settings.contact_whatsapp || '+212620799395').replace(/[^0-9]/g, '') || '212620799395';
+  const orderWhatsAppUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
+    lang === 'fr'
+      ? 'Bonjour Touchbizz, je souhaite commander une carte de visite connectée NFC ou avoir plus d\'informations.'
+      : 'Hello Touchbizz, I would like to order a smart NFC card or learn more about your digital profiles.'
+  )}`;
+
+  const faqs = lang === 'fr' ? [
+    {
+      q: 'Mes clients ont-ils besoin d\'installer une application pour voir mon profil ?',
+      a: 'Non, aucune application n\'est requise ! Lorsque votre client approche son smartphone de votre carte NFC Touchbizz ou scanne votre QR code dynamique, votre profil s\'ouvre directement et instantanément dans son navigateur web.',
+    },
+    {
+      q: 'Comment modifier mes coordonnées ou mes liens par la suite ?',
+      a: 'Vous pouvez modifier vos numéros de téléphone, liens réseaux sociaux, photos et informations professionnelles à tout moment en ligne sans avoir à racheter ou réimprimer une nouvelle carte physique.',
+    },
+    {
+      q: 'Les cartes Touchbizz sont-elles compatibles avec tous les téléphones ?',
+      a: 'Oui, nos cartes sont compatibles à 100% avec l\'ensemble des smartphones modernes (iPhone et Android) grâce à la technologie sans contact NFC intégrée et au QR code de secours haute définition.',
+    },
+    {
+      q: 'Quels sont les délais et modalités de livraison au Maroc ?',
+      a: 'Nous livrons dans toutes les villes du Maroc (Casablanca, Marrakech, Rabat, Tanger, Fès, Agadir, etc.) sous 24 à 48 heures. Le paiement s\'effectue à la livraison en toute sécurité.',
+    },
+    {
+      q: 'Comment fonctionne la plaque / carte Google Reviews ?',
+      a: 'La carte ou plaque Google Reviews est configurée avec le lien direct vers le formulaire d\'avis de votre établissement Google Maps. En 1 seconde, votre client arrive sur l\'écran pour vous attribuer 5 étoiles.',
+    },
+  ] : [
+    {
+      q: 'Do my clients need to install an app to view my profile?',
+      a: 'No app is required! When someone taps your physical Touchbizz NFC card or scans your dynamic QR code, your complete digital profile opens instantly in their native mobile web browser.',
+    },
+    {
+      q: 'How do I update my phone number or social links in the future?',
+      a: 'You can update your contact information, links, and photos anytime directly from your dashboard without needing to reprint or replace your physical NFC card.',
+    },
+    {
+      q: 'Are Touchbizz smart cards compatible with all smartphones?',
+      a: 'Yes, Touchbizz cards work natively with all modern iPhones and Android smartphones with NFC. Each card also comes with a high-definition backup QR code for older devices.',
+    },
+    {
+      q: 'What is the delivery time across Morocco?',
+      a: 'We deliver throughout Morocco (Casablanca, Marrakech, Rabat, Tangier, Agadir, and all regions) within 24 to 48 hours with cash-on-delivery payment options available.',
+    },
+    {
+      q: 'How does the Google Reviews NFC card work?',
+      a: 'The Google Reviews card is pre-configured with your direct Google Maps business review link. When customers tap the card or stand, the 5-star review page launches in 1 second.',
+    },
+  ];
 
   return (
     <div
       id="landing-page-root"
-      className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-cyan-500 selection:text-slate-950 flex flex-col relative overflow-hidden"
+      className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-[#0066FF] selection:text-white flex flex-col relative pb-16 md:pb-0"
     >
-      {/* Background Decorative Ambient Glows */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[450px] bg-gradient-to-b from-blue-600/15 via-cyan-500/10 to-transparent rounded-full blur-[140px]" />
-        <div className="absolute top-1/2 -right-40 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[160px]" />
-        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-blue-700/10 rounded-full blur-[180px]" />
-      </div>
-
-      {/* 1. Sleek, Minimal Navigation Header */}
-      <header className="sticky top-0 z-40 bg-slate-950/70 backdrop-blur-2xl border-b border-slate-800/60">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          {/* Brand Logo & Title on Left */}
-          <div className="flex items-center gap-3.5 group cursor-default">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 p-[1px] shadow-lg shadow-cyan-500/20">
-              <div className="w-full h-full bg-slate-950/90 rounded-[15px] flex items-center justify-center backdrop-blur-sm group-hover:bg-slate-900 transition-colors">
-                <Radio className="w-5 h-5 text-cyan-400" />
-              </div>
+      {/* 1. Sticky Modern Header with Brand & Language Switcher */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 transition-all shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          {/* Brand Logo & Name on Left */}
+          <div
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex items-center gap-3 cursor-pointer group"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-[#0066FF] flex items-center justify-center text-white shadow-md shadow-blue-600/25 group-hover:scale-105 transition-transform">
+              <Radio className="w-5 h-5" />
             </div>
             <div>
-              <span className="font-extrabold text-xl tracking-tight text-white block leading-tight">
+              <span className="font-black text-xl tracking-tight text-slate-900 block leading-tight">
                 Touchbizz
               </span>
-              <span className="text-[10px] font-semibold tracking-wider uppercase text-cyan-400/90">
-                Digital Profile Platform
+              <span className="text-[10px] font-extrabold tracking-wider uppercase text-[#0066FF]">
+                Smart NFC &amp; Digital Cards
               </span>
             </div>
           </div>
-        </div>
-      </header>
 
-      {/* Main Content Container */}
-      <main className="flex-1 relative z-10">
-        {/* 2. Hero Section */}
-        <section className="relative pt-16 pb-20 sm:pt-24 sm:pb-28">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-7">
-            {/* Top Eyebrow Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/80 border border-slate-800/80 text-cyan-300 text-xs font-medium backdrop-blur-md shadow-inner shadow-cyan-500/5">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-              <span>Next-Generation Contact Sharing &amp; NFC Profiles</span>
-            </div>
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-xs font-bold text-slate-600">
+            <button
+              onClick={() => scrollToSection('catalog')}
+              className="hover:text-[#0066FF] transition-colors cursor-pointer"
+            >
+              {lang === 'fr' ? 'Boutique & Produits' : 'Store & Products'}
+            </button>
+            <button
+              onClick={() => scrollToSection('how-it-works')}
+              className="hover:text-[#0066FF] transition-colors cursor-pointer"
+            >
+              {lang === 'fr' ? 'Comment ça marche' : 'How It Works'}
+            </button>
+            <button
+              onClick={() => scrollToSection('simulator')}
+              className="hover:text-[#0066FF] transition-colors cursor-pointer"
+            >
+              {lang === 'fr' ? 'Simulateur en direct' : 'Live Simulator'}
+            </button>
+            <button
+              onClick={() => scrollToSection('why-touchbizz')}
+              className="hover:text-[#0066FF] transition-colors cursor-pointer"
+            >
+              {lang === 'fr' ? 'Pourquoi Touchbizz' : 'Why Touchbizz'}
+            </button>
+            <button
+              onClick={() => scrollToSection('showcase')}
+              className="hover:text-[#0066FF] transition-colors cursor-pointer"
+            >
+              {lang === 'fr' ? 'Exemples de profils' : 'Demo Profiles'}
+            </button>
+          </nav>
 
-            {/* Bold Dynamic Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.12] text-white">
-              Touchbizz —{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-300">
-                Digital Profile Platform
-              </span>
-            </h1>
-
-            {/* Comprehensive, Standout Hero Description */}
-            <p className="text-lg sm:text-xl text-slate-300 leading-relaxed sm:leading-loose max-w-2xl lg:max-w-3xl mx-auto text-center font-normal tracking-wide">
-              Instantly share your phone contacts, WhatsApp, social media profiles, and Google Maps location with a{' '}
-              <strong className="text-cyan-400 font-semibold">single NFC tap</strong> or{' '}
-              <strong className="text-blue-400 font-semibold">QR scan</strong>. Upgrade your professional networking with sleek, always-up-to-date digital business profiles —{' '}
-              <strong className="text-cyan-400 font-semibold">no app required</strong>.
-            </p>
-
-            {/* Single Sample Profile Action Button */}
-            <div className="pt-3 flex items-center justify-center">
+          {/* Right Header: Language Switcher (FR / EN) & WhatsApp CTA */}
+          <div className="flex items-center gap-3">
+            {/* Language Switcher Toggle */}
+            <div className="flex items-center p-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold">
               <button
-                id="hero-view-sample-btn"
-                onClick={() => scrollToSection('showcase')}
-                className="group relative inline-flex items-center justify-center gap-2.5 py-3.5 px-7 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white font-semibold text-sm border border-slate-700/80 shadow-xl shadow-cyan-950/30 hover:shadow-cyan-500/10 hover:border-cyan-500/40 transition-all duration-200 active:scale-98 cursor-pointer"
+                onClick={() => setLang('fr')}
+                className={`py-1 px-2.5 rounded-full transition-all cursor-pointer ${
+                  lang === 'fr'
+                    ? 'bg-white text-[#0066FF] shadow-xs font-black'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+                title="Français"
               >
-                <Smartphone className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform duration-200" />
-                <span>View Sample Profile</span>
-                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform duration-200" />
+                FR
+              </button>
+              <button
+                onClick={() => setLang('en')}
+                className={`py-1 px-2.5 rounded-full transition-all cursor-pointer ${
+                  lang === 'en'
+                    ? 'bg-white text-[#0066FF] shadow-xs font-black'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+                title="English"
+              >
+                EN
               </button>
             </div>
+
+            {/* Desktop WhatsApp CTA */}
+            <a
+              href={orderWhatsAppUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-2 py-2.5 px-5 rounded-full bg-[#10B981] hover:bg-emerald-600 active:scale-98 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>{lang === 'fr' ? 'Commander sur WhatsApp' : 'Order on WhatsApp'}</span>
+            </a>
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
-        </section>
+        </div>
 
-        {/* 3. Interactive Profile Showcase Section */}
-        <section
-          id="showcase"
-          className="py-16 sm:py-24 border-t border-slate-800/60 bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950 relative"
-        >
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto space-y-3.5 mb-10">
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-400 uppercase tracking-widest">
-                <Smartphone className="w-4 h-4" />
-                <span>Interactive Live Showcase</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
-                Experience the Digital Profile
-              </h2>
-              <p className="text-sm text-slate-400 max-w-lg mx-auto">
-                Explore an authentic live preview of how clients view your digital profile on their smartphone.
-              </p>
+        {/* Mobile Dropdown Drawer */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-b border-slate-200 bg-white px-4 py-6 space-y-3"
+            >
+              <button
+                onClick={() => scrollToSection('catalog')}
+                className="w-full text-left py-2.5 px-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50 flex items-center justify-between"
+              >
+                <span>{lang === 'fr' ? 'Boutique & Produits' : 'Store & Products'}</span>
+                <ShoppingBag className="w-4 h-4 text-[#0066FF]" />
+              </button>
+              <button
+                onClick={() => scrollToSection('how-it-works')}
+                className="w-full text-left py-2.5 px-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50 flex items-center justify-between"
+              >
+                <span>{lang === 'fr' ? 'Comment ça marche' : 'How It Works'}</span>
+                <Zap className="w-4 h-4 text-[#0066FF]" />
+              </button>
+              <button
+                onClick={() => scrollToSection('simulator')}
+                className="w-full text-left py-2.5 px-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50 flex items-center justify-between"
+              >
+                <span>{lang === 'fr' ? 'Simulateur de profil' : 'Profile Simulator'}</span>
+                <Smartphone className="w-4 h-4 text-[#0066FF]" />
+              </button>
+              <button
+                onClick={() => scrollToSection('why-touchbizz')}
+                className="w-full text-left py-2.5 px-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50 flex items-center justify-between"
+              >
+                <span>{lang === 'fr' ? 'Pourquoi Touchbizz' : 'Why Touchbizz'}</span>
+                <ShieldCheck className="w-4 h-4 text-[#0066FF]" />
+              </button>
+              <button
+                onClick={() => scrollToSection('showcase')}
+                className="w-full text-left py-2.5 px-3 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-50 flex items-center justify-between"
+              >
+                <span>{lang === 'fr' ? 'Exemples de profils' : 'Demo Profiles'}</span>
+                <Users className="w-4 h-4 text-[#0066FF]" />
+              </button>
 
-              {/* 4 Fixed Featured Profile Tabs */}
-              <div className="pt-5 flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 max-w-3xl mx-auto">
-                {sampleProfiles.map((sample) => {
-                  const isSelected = selectedSlug === sample.slug;
-                  return (
-                    <button
-                      key={sample.slug}
-                      id={`preview-tab-${sample.slug}`}
-                      onClick={() => setSelectedSlug(sample.slug)}
-                      className={`group relative py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 ${
-                        isSelected
-                          ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-lg shadow-cyan-500/25 border border-cyan-400/40 scale-[1.02]'
-                          : 'bg-slate-900/85 text-slate-300 hover:text-white border border-slate-800/90 hover:border-slate-700 hover:bg-slate-850'
-                      }`}
-                    >
-                      <span
-                        className={`w-2 h-2 rounded-full transition-colors duration-200 ${
-                          isSelected ? 'bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.8)]' : 'bg-slate-600 group-hover:bg-slate-500'
-                        }`}
-                      />
-                      <span>{sample.business_name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Phone Mockup with Atmospheric Outer Glow & Drop Shadows */}
-            <div className="flex flex-col items-center justify-center relative">
-              {/* Outer Ambient Radial Device Glow */}
-              <div className="absolute w-[440px] h-[680px] bg-gradient-to-tr from-cyan-500/15 via-blue-600/15 to-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-              {/* Smartphone Graphic / Chassis */}
-              <div className="relative w-full max-w-[370px] sm:max-w-[390px] rounded-[52px] bg-gradient-to-b from-slate-800 via-slate-900 to-slate-950 p-3 sm:p-3.5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9),0_0_60px_-15px_rgba(6,182,212,0.25)] border-2 border-slate-700/70 ring-1 ring-white/15">
-                {/* Physical side buttons accents */}
-                <div className="absolute -left-[4px] top-24 w-[3px] h-7 bg-slate-700 rounded-l shadow-sm" />
-                <div className="absolute -left-[4px] top-35 w-[3px] h-11 bg-slate-700 rounded-l shadow-sm" />
-                <div className="absolute -right-[4px] top-28 w-[3px] h-14 bg-slate-700 rounded-r shadow-sm" />
-
-                {/* Top Dynamic Island / Speaker Pill */}
-                <div className="absolute top-4.5 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-30 flex items-center justify-between px-3 shadow-md border border-slate-800/80">
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-950 border border-slate-850 flex items-center justify-center">
-                    <div className="w-1 h-1 rounded-full bg-blue-600/80" />
-                  </div>
-                  <div className="w-2 h-2 rounded-full bg-slate-900 border border-slate-800" />
-                </div>
-
-                {/* Inner Screen Viewport with Smooth Scrolling and Zero Ugly Scrollbars */}
-                <div className="relative rounded-[42px] overflow-hidden bg-white h-[620px] sm:h-[680px] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border border-slate-800/40 shadow-inner">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={currentSample.slug}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -8 }}
-                      transition={{ duration: 0.2, ease: 'easeOut' }}
-                      className="w-full"
-                    >
-                      <PublicCard client={currentSample} previewMode={true} />
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-              </div>
-
-              {/* Ambient Platform Shadow Underneath */}
-              <div className="w-[280px] sm:w-[320px] h-5 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent blur-xl mt-3 rounded-full pointer-events-none" />
-
-              {/* Direct Fullscreen Link Button */}
-              <div className="mt-6 flex items-center gap-3 z-10">
-                <button
-                  id="open-fullscreen-preview-btn"
-                  onClick={() => onNavigateToDemo(currentSample.slug)}
-                  className="inline-flex items-center gap-2 py-2.5 px-5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white text-xs font-semibold border border-slate-700/80 hover:border-cyan-500/40 shadow-lg shadow-black/40 transition-all duration-200 active:scale-98 cursor-pointer"
+              <div className="pt-2">
+                <a
+                  href={orderWhatsAppUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 px-4 rounded-xl bg-[#10B981] hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20"
                 >
-                  <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Open Fullscreen ({currentSample.slug})</span>
-                </button>
+                  <MessageCircle className="w-4 h-4" />
+                  <span>{lang === 'fr' ? 'Commander sur WhatsApp' : 'Order on WhatsApp'}</span>
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
+
+      {/* 2. Hero Section */}
+      <main className="flex-1">
+        <section className="relative pt-12 pb-16 sm:pt-20 sm:pb-24 overflow-hidden bg-gradient-to-b from-blue-50/50 via-slate-50 to-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 sm:space-y-8 relative z-10">
+            {/* Top Pill */}
+            <div className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-blue-100/80 border border-blue-200 text-[#0066FF] text-xs font-black shadow-xs">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>
+                {lang === 'fr'
+                  ? 'Solution N°1 de Cartes de Visite Connectées au Maroc'
+                  : '#1 Smart NFC Digital Business Cards in Morocco'}
+              </span>
+            </div>
+
+            {/* Main Headline */}
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight max-w-4xl mx-auto leading-tight sm:leading-none">
+              {lang === 'fr' ? (
+                <>
+                  Partagez vos coordonnées en <span className="text-[#0066FF]">1 seconde</span> par simple contact NFC
+                </>
+              ) : (
+                <>
+                  Share your contacts in <span className="text-[#0066FF]">1 second</span> with a simple NFC tap
+                </>
+              )}
+            </h1>
+
+            {/* Subtitle */}
+            <p className="text-slate-600 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+              {lang === 'fr'
+                ? 'Une seule carte NFC haut de gamme pour transmettre instantanément votre numéro WhatsApp, coordonnées complètes, réseaux sociaux et catalogue. Zéro application requise.'
+                : 'One premium NFC card to instantly transmit your WhatsApp, vCard contact info, social profiles, and business links. Zero app required.'}
+            </p>
+
+            {/* Hero CTAs */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2 max-w-md mx-auto">
+              <button
+                onClick={() => scrollToSection('catalog')}
+                className="w-full sm:w-auto py-3.5 px-8 rounded-full bg-[#0066FF] hover:bg-blue-700 active:scale-98 text-white font-extrabold text-sm shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>{lang === 'fr' ? 'Découvrir la Boutique (150 MAD)' : 'Explore Store (150 MAD)'}</span>
+              </button>
+
+              <button
+                onClick={() => scrollToSection('simulator')}
+                className="w-full sm:w-auto py-3.5 px-6 rounded-full bg-white hover:bg-slate-50 active:scale-98 text-slate-800 font-bold text-sm border border-slate-200 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Smartphone className="w-4 h-4 text-[#0066FF]" />
+                <span>{lang === 'fr' ? 'Tester le profil digital' : 'Test Digital Profile'}</span>
+              </button>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="pt-6 flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs font-bold text-slate-500">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <span>{lang === 'fr' ? 'Sans abonnement (Paiement unique)' : 'Zero subscription (One-time fee)'}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Truck className="w-4 h-4 text-[#0066FF]" />
+                <span>{lang === 'fr' ? 'Livraison 24/48h partout au Maroc' : 'Fast 24/48h delivery in Morocco'}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                <span>{lang === 'fr' ? 'Paiement à la livraison' : 'Cash on delivery'}</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* 4. How It Works - Glassmorphism Feature Cards */}
-        <section id="features" className="py-20 sm:py-28 border-t border-slate-800/60 bg-slate-950 relative">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto space-y-3.5 mb-14">
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-400 uppercase tracking-widest">
-                <Zap className="w-4 h-4" />
-                <span>Simple &amp; Frictionless</span>
+        {/* 3. Product Catalog Section (Matching Screenshot Exactly) */}
+        <ProductCatalog
+          products={products}
+          settings={settings}
+          lang={lang}
+        />
+
+        {/* 4. How It Works (3 Steps) */}
+        <section id="how-it-works" className="py-16 sm:py-24 bg-white border-t border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
+            <div className="text-center max-w-3xl mx-auto space-y-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-[#0066FF] text-xs font-bold">
+                <Zap className="w-3.5 h-3.5" />
+                <span>{lang === 'fr' ? 'Simple & Rapide' : 'Fast & Effortless'}</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
-                How Touchbizz Works
+              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                {lang === 'fr' ? 'Comment ça marche ?' : 'How Does It Work?'}
               </h2>
-              <p className="text-sm text-slate-400">
-                A seamless, app-free connection experience built for speed and modern networking.
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                {lang === 'fr'
+                  ? 'Passez au digital en 3 étapes simples et faites forte impression lors de vos réunions.'
+                  : 'Upgrade to smart digital networking in 3 easy steps.'}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Feature 1 */}
-              <div className="group relative p-7 rounded-3xl bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 hover:border-cyan-500/40 hover:bg-slate-900/70 transition-all duration-300 shadow-lg hover:shadow-cyan-500/5 space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold group-hover:scale-105 group-hover:bg-cyan-500/20 transition-all duration-200">
-                  <Radio className="w-6 h-6" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-200/80 space-y-4 relative">
+                <div className="w-12 h-12 rounded-2xl bg-[#0066FF] text-white flex items-center justify-center font-black text-lg shadow-md shadow-blue-600/20">
+                  1
                 </div>
-                <h3 className="text-base font-bold text-white tracking-tight">
-                  1. Tap or Scan
+                <h3 className="text-lg font-bold text-slate-900">
+                  {lang === 'fr' ? '1. Choisissez votre Carte' : '1. Select Your Smart Card'}
                 </h3>
-                <p className="text-xs text-slate-400 leading-relaxed font-normal">
-                  Hold your NFC card near any smartphone or scan your dedicated QR code to launch your digital profile instantly in the browser.
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  {lang === 'fr'
+                    ? 'Commandez votre carte NFC Noire, Blanche ou Plaque Google Reviews au tarif unique de 150 MAD avec paiement à la livraison.'
+                    : 'Order your Black, White, or Google Reviews NFC Card for 150 MAD with cash on delivery anywhere in Morocco.'}
                 </p>
               </div>
 
-              {/* Feature 2 */}
-              <div className="group relative p-7 rounded-3xl bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 hover:border-blue-500/40 hover:bg-slate-900/70 transition-all duration-300 shadow-lg hover:shadow-blue-500/5 space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-bold group-hover:scale-105 group-hover:bg-blue-500/20 transition-all duration-200">
-                  <Zap className="w-6 h-6" />
+              <div className="bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-200/80 space-y-4 relative">
+                <div className="w-12 h-12 rounded-2xl bg-[#0066FF] text-white flex items-center justify-center font-black text-lg shadow-md shadow-blue-600/20">
+                  2
                 </div>
-                <h3 className="text-base font-bold text-white tracking-tight">
-                  2. Direct Instant Actions
+                <h3 className="text-lg font-bold text-slate-900">
+                  {lang === 'fr' ? '2. Personnalisez votre Profil' : '2. Setup Your Profile Online'}
                 </h3>
-                <p className="text-xs text-slate-400 leading-relaxed font-normal">
-                  Clients connect with one touch — phone calls, WhatsApp messages, Google Maps directions, and 5-star Google review links.
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  {lang === 'fr'
+                    ? 'Ajoutez votre photo, fonction, WhatsApp, téléphone, réseaux sociaux et liens utiles en 2 minutes via votre tableau de bord.'
+                    : 'Add your photo, job title, WhatsApp, contact numbers, and social links in 2 minutes.'}
                 </p>
               </div>
 
-              {/* Feature 3 */}
-              <div className="group relative p-7 rounded-3xl bg-slate-900/40 backdrop-blur-xl border border-slate-800/80 hover:border-indigo-500/40 hover:bg-slate-900/70 transition-all duration-300 shadow-lg hover:shadow-indigo-500/5 space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold group-hover:scale-105 group-hover:bg-indigo-500/20 transition-all duration-200">
-                  <UserPlus className="w-6 h-6" />
+              <div className="bg-slate-50 p-6 sm:p-8 rounded-3xl border border-slate-200/80 space-y-4 relative">
+                <div className="w-12 h-12 rounded-2xl bg-[#0066FF] text-white flex items-center justify-center font-black text-lg shadow-md shadow-blue-600/20">
+                  3
                 </div>
-                <h3 className="text-base font-bold text-white tracking-tight">
-                  3. One-Tap Save (.vcf)
+                <h3 className="text-lg font-bold text-slate-900">
+                  {lang === 'fr' ? '3. Touchez et Partagez' : '3. Tap & Connect Instantly'}
                 </h3>
-                <p className="text-xs text-slate-400 leading-relaxed font-normal">
-                  Visitors can download your complete digital contact card directly into their phone contacts list with all emails, socials, and notes.
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  {lang === 'fr'
+                    ? 'Approchez simplement votre carte de n\'importe quel smartphone. Votre interlocuteur enregistre votre contact en 1 clic !'
+                    : 'Simply tap your card against any smartphone. Your interlocutor saves your contact with a single tap.'}
                 </p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. Live Simulator */}
+        <ProfileSimulator lang={lang} />
+
+        {/* 6. Why Touchbizz / Trust Features Grid */}
+        <section id="why-touchbizz" className="py-16 sm:py-24 bg-white border-t border-slate-200/80">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 sm:space-y-16">
+            <div className="text-center max-w-3xl mx-auto space-y-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>{lang === 'fr' ? 'Avantages Exclusifs' : 'Exclusive Advantages'}</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                {lang === 'fr' ? 'Pourquoi choisir Touchbizz ?' : 'Why Choose Touchbizz?'}
+              </h2>
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                {lang === 'fr'
+                  ? 'Fini le gaspillage des cartes de visite papier obsolètes dès qu\'un numéro change.'
+                  : 'Say goodbye to wasted paper cards that become outdated the moment info changes.'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#0066FF] flex items-center justify-center">
+                  <RotateCcw className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm">
+                  {lang === 'fr' ? 'Modifiable à l\'infini' : 'Unlimited Updates'}
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {lang === 'fr'
+                    ? 'Changez de numéro ou de poste sans jamais avoir à réimprimer une nouvelle carte physique.'
+                    : 'Update your contact details or role anytime without ever ordering new physical cards.'}
+                </p>
+              </div>
+
+              <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm">
+                  {lang === 'fr' ? '100% Universel' : '100% Universal'}
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {lang === 'fr'
+                    ? 'Fonctionne sur iPhone et Android via NFC sans contact et QR code de secours haute définition.'
+                    : 'Works seamlessly on iPhones and Android via contactless NFC and backup QR code.'}
+                </p>
+              </div>
+
+              <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm">
+                  {lang === 'fr' ? 'Enregistrement 1-Clic' : '1-Click vCard Save'}
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {lang === 'fr'
+                    ? 'Votre client clique sur "Enregistrer" et vos coordonnées complètes s\'intègrent dans son carnet d\'adresses.'
+                    : 'Your client taps "Save Contact" and all your details are stored directly in their phone address book.'}
+                </p>
+              </div>
+
+              <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200/80 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm">
+                  {lang === 'fr' ? 'Zéro Abonnement' : 'Zero Recurring Fees'}
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  {lang === 'fr'
+                    ? 'Tarif unique de 150 MAD à l\'achat, sans frais cachés mensuels ni annuels.'
+                    : 'One-time 150 MAD payment with zero hidden monthly or annual subscription fees.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 7. Showcase / Demo Profiles */}
+        <div id="showcase">
+          <ShowcaseSection clients={clients} onNavigateToDemo={onNavigateToDemo} />
+        </div>
+
+        {/* 8. FAQ Section */}
+        <section className="py-16 sm:py-24 bg-slate-50 border-t border-slate-200/80">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <div className="text-center space-y-3">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                {lang === 'fr' ? 'Questions Fréquemment Posées' : 'Frequently Asked Questions'}
+              </h2>
+              <p className="text-slate-600 text-xs sm:text-sm">
+                {lang === 'fr'
+                  ? 'Tout ce que vous devez savoir sur vos cartes connectées Touchbizz'
+                  : 'Everything you need to know about Touchbizz NFC business cards'}
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {faqs.map((faq, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-2xs transition-all"
+                >
+                  <button
+                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-xs sm:text-sm text-slate-900 hover:text-[#0066FF] transition-colors cursor-pointer"
+                  >
+                    <span>{faq.q}</span>
+                    <ChevronDown
+                      className={`w-4 h-4 shrink-0 transition-transform ${
+                        openFaq === idx ? 'rotate-180 text-[#0066FF]' : 'text-slate-400'
+                      }`}
+                    />
+                  </button>
+                  {openFaq === idx && (
+                    <div className="px-4 pb-4 sm:px-5 sm:pb-5 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </section>
       </main>
 
-      {/* 5. Minimal Sleek Footer */}
-      <footer className="border-t border-slate-800/70 bg-slate-950 py-10 relative z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-slate-400">
-          {/* Brand Logo & Copyright */}
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-slate-950 font-bold shadow-sm">
-              <Radio className="w-3.5 h-3.5 text-white" />
+      {/* 9. Modern Footer */}
+      <footer className="bg-slate-950 text-white py-12 sm:py-16 border-t border-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="space-y-4 md:col-span-2">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-[#0066FF] flex items-center justify-center text-white">
+                  <Radio className="w-5 h-5" />
+                </div>
+                <span className="font-black text-xl tracking-tight text-white">
+                  Touchbizz
+                </span>
+              </div>
+              <p className="text-slate-400 text-xs sm:text-sm max-w-md leading-relaxed">
+                {lang === 'fr'
+                  ? 'Pionnier des solutions de networking NFC et profils professionnels digitaux au Maroc. Cartes intelligentes, plaques d\'avis Google et supports sans contact.'
+                  : 'Smart NFC digital business card solutions across Morocco. Connected smart cards, Google Reviews stands, and contactless profiles.'}
+              </p>
+              <div className="text-xs text-slate-400 flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5 text-[#0066FF]" />
+                <span>Marrakech &amp; Casablanca, Maroc</span>
+              </div>
             </div>
-            <div>
-              <span className="font-bold text-white tracking-tight">Touchbizz</span>
-              <span className="text-slate-500 ml-2">
-                © {new Date().getFullYear()} Touchbizz. All rights reserved.
-              </span>
+
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                {lang === 'fr' ? 'Navigation' : 'Quick Links'}
+              </h4>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li>
+                  <button onClick={() => scrollToSection('catalog')} className="hover:text-white cursor-pointer">
+                    {lang === 'fr' ? 'Boutique NFC (150 MAD)' : 'NFC Store (150 MAD)'}
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => scrollToSection('how-it-works')} className="hover:text-white cursor-pointer">
+                    {lang === 'fr' ? 'Comment ça marche' : 'How It Works'}
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => scrollToSection('simulator')} className="hover:text-white cursor-pointer">
+                    {lang === 'fr' ? 'Simulateur en direct' : 'Live Simulator'}
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                {lang === 'fr' ? 'Service Client & Commandes' : 'Customer Support & Orders'}
+              </h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                {lang === 'fr'
+                  ? 'Commandes express et assistance WhatsApp 7j/7 :'
+                  : 'WhatsApp support & express ordering:'}
+              </p>
+              <a
+                href={orderWhatsAppUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 py-2 px-4 rounded-xl bg-[#10B981] hover:bg-emerald-600 text-white font-bold text-xs shadow-md transition-colors"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>{settings.contact_whatsapp || '+212 620-799395'}</span>
+              </a>
             </div>
           </div>
 
-          {/* Direct WhatsApp & Email Contact */}
-          <div className="flex items-center gap-6">
-            <a
-              href={`https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent('Hello Touchbizz!')}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-emerald-400 transition-colors flex items-center gap-1.5 font-medium"
-            >
-              <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-              <span>WhatsApp: {settings.contact_whatsapp || '+212620799395'}</span>
-            </a>
-            <a
-              href={`mailto:${settings.contact_email || 'boalyhicham@gmail.com'}`}
-              className="hover:text-cyan-400 transition-colors flex items-center gap-1.5 font-medium"
-            >
-              <Mail className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{settings.contact_email || 'boalyhicham@gmail.com'}</span>
-            </a>
+          <div className="pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+            <p>© {new Date().getFullYear()} Touchbizz. {lang === 'fr' ? 'Tous droits réservés.' : 'All rights reserved.'}</p>
+            <div className="flex items-center gap-4">
+              <span>{lang === 'fr' ? 'Paiement à la livraison au Maroc' : 'Cash on delivery in Morocco'}</span>
+              <span>•</span>
+              <span>{lang === 'fr' ? 'Livraison 24/48h' : '24/48h Delivery'}</span>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* 10. Sticky Bottom Bar on Mobile for Instant Ordering / Navigation */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 p-2.5 px-4 flex items-center justify-between gap-3 shadow-lg">
+        <button
+          onClick={() => scrollToSection('catalog')}
+          className="flex-1 py-2 px-3 rounded-full bg-slate-100 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5"
+        >
+          <ShoppingBag className="w-3.5 h-3.5 text-[#0066FF]" />
+          <span>{lang === 'fr' ? 'Boutique' : 'Catalog'}</span>
+        </button>
+
+        <a
+          href={orderWhatsAppUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 py-2 px-3 rounded-full bg-[#10B981] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/20 text-center"
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+          <span>{lang === 'fr' ? 'Commander' : 'WhatsApp'}</span>
+        </a>
+      </div>
     </div>
   );
 };

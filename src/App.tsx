@@ -6,13 +6,17 @@ import {
   updateClient,
   deleteClient,
   toggleClientStatus,
+  fetchProducts,
+  createProduct,
+  updateProduct,
+  deleteProduct,
   fetchSettings,
   updateSettings,
   checkAdminSession,
   setAdminSession,
 } from './lib/api';
-import { ClientProfile, SiteSettings } from './types';
-import { INITIAL_SETTINGS, INITIAL_CLIENTS } from './data/initialData';
+import { ClientProfile, SiteSettings, Product } from './types';
+import { INITIAL_SETTINGS, INITIAL_CLIENTS, INITIAL_PRODUCTS } from './data/initialData';
 import { LandingPage } from './components/landing/LandingPage';
 import { PublicCard } from './components/public/PublicCard';
 import { AdminLayout } from './components/admin/AdminLayout';
@@ -21,6 +25,7 @@ import { Radio, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function App() {
   const [clients, setClients] = useState<ClientProfile[]>(INITIAL_CLIENTS);
+  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [settings, setSettings] = useState<SiteSettings>(INITIAL_SETTINGS);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
   const [currentPath, setCurrentPath] = useState<string>(
@@ -38,15 +43,19 @@ export default function App() {
 
     async function loadInitialData() {
       try {
-        const [loadedClients, loadedSettings] = await Promise.all([
+        const [loadedClients, loadedSettings, loadedProducts] = await Promise.all([
           fetchClients(),
           fetchSettings(),
+          fetchProducts(),
         ]);
         if (loadedClients && loadedClients.length > 0) {
           setClients(loadedClients);
         }
         if (loadedSettings) {
           setSettings(loadedSettings);
+        }
+        if (loadedProducts && loadedProducts.length > 0) {
+          setProducts(loadedProducts);
         }
       } catch (err) {
         console.error('Data load error:', err);
@@ -156,6 +165,24 @@ export default function App() {
     setSettings(saved);
   };
 
+  // Product CRUD Handlers
+  const handleCreateProduct = async (
+    data: Omit<Product, 'id' | 'created_at' | 'updated_at'>
+  ) => {
+    const created = await createProduct(data);
+    setProducts((prev) => [created, ...prev.filter((p) => p.id !== created.id)]);
+  };
+
+  const handleUpdateProduct = async (id: string, data: Partial<Product>) => {
+    const updated = await updateProduct(id, data);
+    setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    await deleteProduct(id);
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  };
+
   // 1. Admin Route (Strictly /admin-hamza-sec)
   if (isAdminRoute) {
     if (!isAdminLoggedIn) {
@@ -172,6 +199,7 @@ export default function App() {
     return (
       <AdminLayout
         clients={clients}
+        products={products}
         settings={settings}
         onLogout={() => {
           setAdminSession(false);
@@ -186,6 +214,9 @@ export default function App() {
         onUpdateClient={handleUpdateClient}
         onDeleteClient={handleDeleteClient}
         onToggleStatus={handleToggleStatus}
+        onCreateProduct={handleCreateProduct}
+        onUpdateProduct={handleUpdateProduct}
+        onDeleteProduct={handleDeleteProduct}
         onSaveSettings={handleSaveSettings}
         onViewClientPublic={(slug) => navigate(`/${slug}`)}
       />
@@ -270,6 +301,7 @@ export default function App() {
       demoClient={demoClient}
       settings={settings}
       clients={clients}
+      products={products}
       onNavigateToDemo={(slug) => navigate(`/${slug}`)}
     />
   );

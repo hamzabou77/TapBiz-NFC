@@ -2,8 +2,8 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
-import { INITIAL_CLIENTS, INITIAL_SETTINGS } from './src/data/initialData.ts';
-import { ClientProfile, SiteSettings } from './src/types.ts';
+import { INITIAL_CLIENTS, INITIAL_SETTINGS, INITIAL_PRODUCTS } from './src/data/initialData.ts';
+import { ClientProfile, SiteSettings, Product } from './src/types.ts';
 
 const PORT = 3000;
 const DB_DIR = path.join(process.cwd(), 'data');
@@ -11,6 +11,7 @@ const DB_FILE = path.join(DB_DIR, 'db.json');
 
 interface DatabaseSchema {
   clients: ClientProfile[];
+  products: Product[];
   settings: SiteSettings;
   adminPasswordHash: string;
 }
@@ -22,7 +23,11 @@ function loadDatabase(): DatabaseSchema {
     }
     if (fs.existsSync(DB_FILE)) {
       const data = fs.readFileSync(DB_FILE, 'utf-8');
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      if (!parsed.products || !Array.isArray(parsed.products)) {
+        parsed.products = INITIAL_PRODUCTS;
+      }
+      return parsed;
     }
   } catch (err) {
     console.error('Failed to read db.json, initializing fresh data', err);
@@ -30,6 +35,7 @@ function loadDatabase(): DatabaseSchema {
 
   const freshDb: DatabaseSchema = {
     clients: INITIAL_CLIENTS,
+    products: INITIAL_PRODUCTS,
     settings: INITIAL_SETTINGS,
     adminPasswordHash: 'admin123', // default password
   };
@@ -167,6 +173,69 @@ async function startServer() {
       saveDatabase(db);
     }
     res.json({ success: true });
+  });
+
+  // --- Product Store Endpoints ---
+  app.get('/api/products', (req: Request, res: Response) => {
+    res.json(db.products || INITIAL_PRODUCTS);
+  });
+
+  app.post('/api/products', (req: Request, res: Response) => {
+    const payload = req.body;
+    if (!payload.title) {
+      return res.status(400).json({ error: 'Product title is required' });
+    }
+
+    const newProduct: Product = {
+      id: 'prod-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
+      title: payload.title.trim(),
+      description: payload.description || '',
+      price: typeof payload.price === 'number' ? payload.price : parseFloat(payload.price) || 150,
+      category: payload.category || 'Cartes NFC',
+      imageUrl: payload.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
+      isPopular: Boolean(payload.isPopular),
+      features: Array.isArray(payload.features) ? payload.features : [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    if (!db.products) db.products = [];
+    db.products.unshift(newProduct);
+    saveDatabase(db);
+    res.status(201).json(newProduct);
+  });
+
+  app.put('/api/products/:id', (req: Request, res: Response) => {
+    const id = req.params.id;
+    if (!db.products) db.products = [...INITIAL_PRODUCTS];
+    const index = db.products.findIndex((p) => p.id === id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    const payload = req.body;
+    const updated: Product = {
+      ...db.products[index],
+      ...payload,
+      price: payload.price !== undefined ? (typeof payload.price === 'number' ? payload.price : parseFloat(payload.price) || 150) : db.products[index].price,
+      updated_at: new Date().toISOString(),
+    };
+
+    db.products[index] = updated;
+    saveDatabase(db);
+    res.json(updated);
+  });
+
+  app.delete('/api/products/:id', (req: Request, res: Response) => {
+    const id = req.params.id;
+    if (!db.products) db.products = [...INITIAL_PRODUCTS];
+    const initialLen = db.products.length;
+    db.products = db.products.filter((p) => p.id !== id);
+    if (db.products.length === initialLen) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    saveDatabase(db);
+    res.json({ success: true, message: 'Product deleted successfully' });
   });
 
   // Get settings

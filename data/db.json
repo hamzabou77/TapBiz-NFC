@@ -71,6 +71,40 @@
       "updated_at": "2025-02-18T16:45:00.000Z"
     }
   ],
+  "products": [
+    {
+      "id": "prod-smart-card",
+      "title": "Touchbizz Smart Card (Black/White)",
+      "description": "Carte de visite connectée NFC ultra-élégante. Partagez votre profil professionnel complet (WhatsApp, téléphone, réseaux, coordonnées) en 1 seconde par simple contact.",
+      "price": 150,
+      "category": "Cartes NFC",
+      "imageUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+      "isPopular": true,
+      "features": [
+        "Puce NFC haute sensibilité compatible 100% smartphones",
+        "QR Code dynamique haute définition au dos",
+        "Profil digital personnalisable à volonté sans réimpression",
+        "Bouton 1-clic 'Enregistrer le Contact' (vCard)",
+        "Finition premium mate résistante à l'eau et aux rayures"
+      ]
+    },
+    {
+      "id": "prod-google-review",
+      "title": "Touchbizz Google Review Card",
+      "description": "Multipliez vos avis clients 5 étoiles sur Google en toute simplicité. Vos clients approchent leur téléphone et la page d'avis s'ouvre instantanément.",
+      "price": 150,
+      "category": "Google Reviews",
+      "imageUrl": "https://images.unsplash.com/photo-1556742049-0a67e557b63f?w=800&auto=format&fit=crop&q=80",
+      "isPopular": true,
+      "features": [
+        "Redirection directe vers votre formulaire d'avis Google",
+        "Boost immédiat de votre référencement local (Google Maps)",
+        "Zéro friction pour le client : aucun lien à taper",
+        "Compatible comptoirs, réceptions, tables et livreurs",
+        "QR code de secours intégré pour anciens appareils"
+      ]
+    }
+  ],
   "settings": {
     "site_name": "Touchbizz",
     "tagline": "Digital Profile Platform",

@@ -1,8 +1,9 @@
-import { ClientProfile, SiteSettings } from '../types';
-import { INITIAL_SETTINGS } from '../data/initialData';
+import { ClientProfile, SiteSettings, Product } from '../types';
+import { INITIAL_SETTINGS, INITIAL_PRODUCTS } from '../data/initialData';
 import { supabase } from './supabase';
 
 const SETTINGS_STORAGE_KEY = 'touchbizz_settings_db_v1';
+const PRODUCTS_STORAGE_KEY = 'touchbizz_products_db_v1';
 const AUTH_STORAGE_KEY = 'touchbizz_admin_session_v1';
 
 /**
@@ -418,3 +419,123 @@ export function setAdminSession(auth: boolean): void {
     // ignore
   }
 }
+
+function getLocalProducts(): Product[] {
+  try {
+    const raw = localStorage.getItem(PRODUCTS_STORAGE_KEY);
+    if (!raw) {
+      return INITIAL_PRODUCTS;
+    }
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_PRODUCTS;
+  } catch {
+    return INITIAL_PRODUCTS;
+  }
+}
+
+function saveLocalProducts(products: Product[]): void {
+  try {
+    localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
+  } catch (err) {
+    console.error('Failed to save products locally', err);
+  }
+}
+
+export async function fetchProducts(): Promise<Product[]> {
+  try {
+    const res = await fetch('/api/products');
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        saveLocalProducts(data);
+        return data;
+      }
+    }
+  } catch (err) {
+    console.warn('Could not fetch products from server, falling back to local storage', err);
+  }
+  return getLocalProducts();
+}
+
+export async function createProduct(
+  productData: Omit<Product, 'id' | 'created_at' | 'updated_at'>
+): Promise<Product> {
+  const newProduct: Product = {
+    ...productData,
+    id: 'prod-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  try {
+    const res = await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newProduct),
+    });
+    if (res.ok) {
+      const created = await res.json();
+      const current = getLocalProducts();
+      saveLocalProducts([created, ...current.filter((p) => p.id !== created.id)]);
+      return created;
+    }
+  } catch {
+    // fallback to local
+  }
+
+  const current = getLocalProducts();
+  const updatedList = [newProduct, ...current];
+  saveLocalProducts(updatedList);
+  return newProduct;
+}
+
+export async function updateProduct(
+  id: string,
+  productData: Partial<Product>
+): Promise<Product> {
+  try {
+    const res = await fetch(`/api/products/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(productData),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      const current = getLocalProducts();
+      saveLocalProducts(current.map((p) => (p.id === id ? updated : p)));
+      return updated;
+    }
+  } catch {
+    // fallback
+  }
+
+  const current = getLocalProducts();
+  const index = current.findIndex((p) => p.id === id);
+  if (index !== -1) {
+    const updated: Product = {
+      ...current[index],
+      ...productData,
+      updated_at: new Date().toISOString(),
+    };
+    current[index] = updated;
+    saveLocalProducts(current);
+    return updated;
+  }
+  throw new Error('Product not found');
+}
+
+export async function deleteProduct(id: string): Promise<boolean> {
+  try {
+    await fetch(`/api/products/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+  } catch {
+    // fallback
+  }
+
+  const current = getLocalProducts();
+  const filtered = current.filter((p) => p.id !== id);
+  saveLocalProducts(filtered);
+  return true;
+}
+
