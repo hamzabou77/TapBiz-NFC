@@ -45,7 +45,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     }
   };
 
-  const cleanWhatsapp = (settings.contact_whatsapp || '+212660000111').replace(/[^0-9]/g, '');
+  const cleanWhatsapp = (settings.contact_whatsapp || '+212620799395').replace(/[^0-9]/g, '');
 
   return (
     <div
@@ -101,8 +101,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </h1>
 
             {/* Comprehensive, Standout Hero Description */}
-            <p className="text-lg sm:text-xl text-slate-300/95 leading-relaxed max-w-3xl mx-auto font-normal">
-              Instantly share your phone contacts, WhatsApp, social media profiles, and Google Maps location with a single NFC tap or QR scan. Upgrade your professional networking with sleek, always-up-to-date digital business profiles — no app required.
+            <p className="text-lg sm:text-xl text-slate-300 leading-relaxed sm:leading-loose max-w-2xl lg:max-w-3xl mx-auto text-center font-normal tracking-wide">
+              Instantly share your phone contacts, WhatsApp, social media profiles, and Google Maps location with a{' '}
+              <strong className="text-cyan-400 font-semibold">single NFC tap</strong> or{' '}
+              <strong className="text-blue-400 font-semibold">QR scan</strong>. Upgrade your professional networking with sleek, always-up-to-date digital business profiles —{' '}
+              <strong className="text-cyan-400 font-semibold">no app required</strong>.
             </p>
 
             {/* Single Sample Profile Action Button */}
@@ -280,14 +283,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               className="hover:text-emerald-400 transition-colors flex items-center gap-1.5 font-medium"
             >
               <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-              <span>WhatsApp: {settings.contact_whatsapp || '+212 660 000 111'}</span>
+              <span>WhatsApp: {settings.contact_whatsapp || '+212620799395'}</span>
             </a>
             <a
-              href={`mailto:${settings.contact_email || 'contact@touchbizz.ma'}`}
+              href={`mailto:${settings.contact_email || 'boalyhicham@gmail.com'}`}
               className="hover:text-cyan-400 transition-colors flex items-center gap-1.5 font-medium"
             >
               <Mail className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{settings.contact_email || 'contact@touchbizz.ma'}</span>
+              <span>{settings.contact_email || 'boalyhicham@gmail.com'}</span>
             </a>
           </div>
         </div>

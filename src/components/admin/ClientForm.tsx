@@ -150,9 +150,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
     description:
       formData.description ||
       'This is how your short business description will appear to your customers when they tap your NFC card or scan your QR code.',
-    phone: formData.phone || '+212661000000',
-    whatsapp: formData.whatsapp || formData.phone || '+212661000000',
-    email: formData.email || 'contact@mybusiness.ma',
+    phone: formData.phone || '+212620799395',
+    whatsapp: formData.whatsapp || formData.phone || '+212620799395',
+    email: formData.email || 'boalyhicham@gmail.com',
     website: formData.website || 'https://mybusiness.ma',
     instagram: formData.instagram || 'https://instagram.com',
     facebook: formData.facebook || 'https://facebook.com',
@@ -389,7 +389,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+212 661 234 567"
+                    placeholder="+212 620 799 395"
                     className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 text-sm outline-none transition-all"
                   />
                 </div>
@@ -404,7 +404,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                     type="tel"
                     value={formData.whatsapp}
                     onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                    placeholder="+212 661 234 567"
+                    placeholder="+212 620 799 395"
                     className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 text-sm outline-none transition-all"
                   />
                 </div>
@@ -421,7 +421,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="contact@clientbusiness.ma"
+                    placeholder="boalyhicham@gmail.com"
                     className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 text-sm outline-none transition-all"
                   />
                 </div>
