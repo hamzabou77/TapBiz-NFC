@@ -125,7 +125,7 @@ export const ProfileSimulator: React.FC<ProfileSimulatorProps> = ({ lang = 'fr' 
               {/* Circular Color Swatches */}
               <div className="flex flex-wrap items-center gap-3">
                 {THEME_PRESETS.map((item) => {
-                  const isSelected = themeColor === item.id;
+                  const isSelected = themeColor === item.id || themeColor === item.hex;
                   return (
                     <button
                       key={item.id}

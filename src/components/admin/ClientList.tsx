@@ -19,6 +19,7 @@ import {
 import { ClientProfile } from '../../types';
 import { QrModal } from '../public/QrModal';
 import { generateQrDataUrl, downloadDataUrl } from '../../lib/qrcode';
+import { getThemeConfig } from '../../lib/theme';
 
 interface ClientListProps {
   clients: ClientProfile[];
@@ -171,6 +172,7 @@ export const ClientList: React.FC<ClientListProps> = ({
           {filteredClients.map((client) => {
             const isCopied = copiedSlug === client.slug;
             const fullUrl = `${domainBase}/${client.slug}`;
+            const theme = getThemeConfig(client.themeColor);
 
             return (
               <div
@@ -182,7 +184,7 @@ export const ClientList: React.FC<ClientListProps> = ({
                 <div className="p-5 pb-3">
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                      <div className="w-12 h-12 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 relative">
                         {client.logo ? (
                           <img
                             src={client.logo}
@@ -190,7 +192,10 @@ export const ClientList: React.FC<ClientListProps> = ({
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-blue-600 text-white font-bold flex items-center justify-center">
+                          <div
+                            className={`w-full h-full ${theme.bgClass} text-white font-bold flex items-center justify-center`}
+                            style={theme.customHex ? { backgroundColor: theme.customHex } : undefined}
+                          >
                             {client.business_name.charAt(0)}
                           </div>
                         )}
@@ -201,6 +206,11 @@ export const ClientList: React.FC<ClientListProps> = ({
                         </h3>
                         <div className="text-xs text-slate-500 font-mono flex items-center gap-1 mt-0.5">
                           <span>/{client.slug}</span>
+                          <span
+                            className="w-2 h-2 rounded-full inline-block ml-1"
+                            style={{ backgroundColor: theme.hex }}
+                            title={`Thème: ${theme.name}`}
+                          />
                         </div>
                       </div>
                     </div>

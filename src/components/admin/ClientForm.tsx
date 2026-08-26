@@ -275,20 +275,20 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                   <span>Couleur du Thème NFC</span>
                 </h3>
                 <span className="text-xs font-semibold text-slate-500">
-                  {THEME_PRESETS.find(p => p.id === formData.themeColor)?.name || formData.themeColor}
+                  {THEME_PRESETS.find(p => p.id === formData.themeColor || p.hex === formData.themeColor)?.name || formData.themeColor}
                 </span>
               </div>
 
               {/* Circular Color Swatches */}
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 {THEME_PRESETS.map((item) => {
-                  const isSelected = formData.themeColor === item.id;
+                  const isSelected = formData.themeColor === item.id || formData.themeColor === item.hex || (!formData.themeColor && item.id === 'blue');
                   return (
                     <button
                       key={item.id}
                       type="button"
                       onClick={() => {
-                        setFormData({ ...formData, themeColor: item.id });
+                        setFormData((prev) => ({ ...prev, themeColor: item.id }));
                         setShowCustomHex(false);
                       }}
                       className={`w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center cursor-pointer relative shadow-sm ${
@@ -320,7 +320,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                   type="button"
                   onClick={() => {
                     setShowCustomHex(true);
-                    setFormData({ ...formData, themeColor: customHex });
+                    setFormData((prev) => ({ ...prev, themeColor: customHex }));
                   }}
                   className={`px-3 py-2 rounded-full border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                     showCustomHex || (formData.themeColor && formData.themeColor.startsWith('#'))
@@ -340,8 +340,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                     type="color"
                     value={customHex}
                     onChange={(e) => {
-                      setCustomHex(e.target.value);
-                      setFormData({ ...formData, themeColor: e.target.value });
+                      const val = e.target.value;
+                      setCustomHex(val);
+                      setFormData((prev) => ({ ...prev, themeColor: val }));
                     }}
                     className="w-9 h-9 rounded-lg cursor-pointer border border-slate-300 p-0.5"
                   />
@@ -349,8 +350,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({
                     type="text"
                     value={customHex}
                     onChange={(e) => {
-                      setCustomHex(e.target.value);
-                      setFormData({ ...formData, themeColor: e.target.value });
+                      const val = e.target.value;
+                      setCustomHex(val);
+                      setFormData((prev) => ({ ...prev, themeColor: val }));
                     }}
                     placeholder="#2563eb"
                     className="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-mono font-bold text-slate-800 uppercase"

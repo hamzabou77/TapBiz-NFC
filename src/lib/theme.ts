@@ -80,6 +80,8 @@ export const THEME_PRESETS: ThemeConfig[] = [
 ];
 
 export function getThemeConfig(themeKeyOrHex?: string): {
+  id: string;
+  name: string;
   gradient: string;
   bgClass: string;
   textClass: string;
@@ -90,6 +92,8 @@ export function getThemeConfig(themeKeyOrHex?: string): {
   if (!themeKeyOrHex) {
     const defaultTheme = THEME_PRESETS[0];
     return {
+      id: defaultTheme.id,
+      name: defaultTheme.name,
       gradient: defaultTheme.gradient,
       bgClass: defaultTheme.bgClass,
       textClass: defaultTheme.textClass,
@@ -98,12 +102,15 @@ export function getThemeConfig(themeKeyOrHex?: string): {
     };
   }
 
+  const cleanKey = themeKeyOrHex.trim();
   const preset = THEME_PRESETS.find(
-    (p) => p.id === themeKeyOrHex || p.hex.toLowerCase() === themeKeyOrHex.toLowerCase()
+    (p) => p.id.toLowerCase() === cleanKey.toLowerCase() || p.hex.toLowerCase() === cleanKey.toLowerCase()
   );
 
   if (preset) {
     return {
+      id: preset.id,
+      name: preset.name,
       gradient: preset.gradient,
       bgClass: preset.bgClass,
       textClass: preset.textClass,
@@ -113,19 +120,23 @@ export function getThemeConfig(themeKeyOrHex?: string): {
   }
 
   // Handle custom hex
-  if (themeKeyOrHex.startsWith('#')) {
+  if (cleanKey.startsWith('#')) {
     return {
+      id: 'custom',
+      name: 'Custom',
       gradient: 'from-slate-900 via-slate-800 to-slate-900',
       bgClass: 'bg-slate-900',
       textClass: 'text-slate-900',
       borderClass: 'border-slate-800',
-      hex: themeKeyOrHex,
-      customHex: themeKeyOrHex,
+      hex: cleanKey,
+      customHex: cleanKey,
     };
   }
 
   const fallback = THEME_PRESETS[0];
   return {
+    id: fallback.id,
+    name: fallback.name,
     gradient: fallback.gradient,
     bgClass: fallback.bgClass,
     textClass: fallback.textClass,
