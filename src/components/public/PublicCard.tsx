@@ -67,12 +67,20 @@ export const PublicCard: React.FC<PublicCardProps> = ({ client, previewMode = fa
   return (
     <div
       id="public-profile-root"
-      className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 py-3 sm:py-10 px-2 sm:px-4 flex flex-col items-center justify-center font-sans antialiased text-slate-900 selection:bg-cyan-500 selection:text-slate-950"
+      className={
+        previewMode
+          ? 'w-full bg-white font-sans antialiased text-slate-900 selection:bg-cyan-500 selection:text-slate-950 relative'
+          : 'min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 py-3 sm:py-10 px-2 sm:px-4 flex flex-col items-center justify-center font-sans antialiased text-slate-900 selection:bg-cyan-500 selection:text-slate-950'
+      }
     >
       {/* Container simulating smartphone layout on desktop and clean full-width on mobile */}
       <div
         id="digital-card-container"
-        className="w-full max-w-md bg-white rounded-3xl sm:rounded-[40px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] border border-slate-100 overflow-hidden relative transition-all"
+        className={
+          previewMode
+            ? 'w-full bg-white overflow-hidden relative transition-all'
+            : 'w-full max-w-md bg-white rounded-3xl sm:rounded-[40px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] border border-slate-100 overflow-hidden relative transition-all'
+        }
       >
         {/* Top Floating Action Controls */}
         <div className="absolute top-4 right-4 z-20 flex items-center gap-2">

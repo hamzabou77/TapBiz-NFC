@@ -269,6 +269,7 @@ export default function App() {
     <LandingPage
       demoClient={demoClient}
       settings={settings}
+      clients={clients}
       onNavigateToDemo={(slug) => navigate(`/${slug}`)}
     />
   );

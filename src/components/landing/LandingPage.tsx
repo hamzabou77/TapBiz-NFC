@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Radio,
   Sparkles,
@@ -12,31 +12,100 @@ import {
   Compass,
   CheckCircle2,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { ClientProfile, SiteSettings } from '../../types';
 import { PublicCard } from '../public/PublicCard';
-import { INITIAL_CLIENTS } from '../../data/initialData';
+import { FEATURED_SHOWCASE_PROFILES } from '../../data/initialData';
+import { fetchClientBySlug } from '../../lib/api';
 
 interface LandingPageProps {
   demoClient: ClientProfile;
   settings: SiteSettings;
+  clients?: ClientProfile[];
   onNavigateToDemo: (slug: string) => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
   demoClient,
   settings,
+  clients = [],
   onNavigateToDemo,
 }) => {
-  const [selectedSlug, setSelectedSlug] = useState<string>(demoClient?.slug || 'ahmed-car-rental');
+  const [fetchedHamzaProfile, setFetchedHamzaProfile] = useState<ClientProfile | null>(null);
 
-  // Available sample profiles for live demonstration
-  const sampleProfiles: ClientProfile[] = [
-    demoClient,
-    ...INITIAL_CLIENTS.filter((c) => c.slug !== demoClient?.slug),
-  ].filter(Boolean);
+  // Directly fetch live Hamza profile from database / API / Supabase on mount
+  useEffect(() => {
+    let isMounted = true;
+    fetchClientBySlug('hamza')
+      .then((profile) => {
+        if (isMounted && profile) {
+          setFetchedHamzaProfile(profile);
+        }
+      })
+      .catch((err) => {
+        console.warn('Error fetching live Hamza profile for preview:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // 4 Fixed featured showcase profiles linked dynamically to database/localStorage
+  const sampleProfiles: ClientProfile[] = FEATURED_SHOWCASE_PROFILES.map((baseProfile) => {
+    // 1. Dynamic sync for Hamza showcase profile
+    if (baseProfile.slug === 'hamza' || baseProfile.id === 'client-hamza') {
+      const liveHamza =
+        clients.find(
+          (c) =>
+            c.slug.toLowerCase() === 'hamza' ||
+            c.slug.toLowerCase() === 'hamza-touchbizz' ||
+            c.id === 'client-hamza' ||
+            c.business_name.toLowerCase().includes('hamza')
+        ) || fetchedHamzaProfile;
+
+      if (liveHamza) {
+        return {
+          ...baseProfile,
+          ...liveHamza,
+          business_name: liveHamza.business_name || baseProfile.business_name,
+          logo: liveHamza.logo || baseProfile.logo,
+          cover_image: liveHamza.cover_image || baseProfile.cover_image,
+          tagline: liveHamza.tagline !== undefined ? liveHamza.tagline : baseProfile.tagline,
+          description: liveHamza.description || baseProfile.description,
+          phone: liveHamza.phone || baseProfile.phone,
+          whatsapp: liveHamza.whatsapp || baseProfile.whatsapp,
+          email: liveHamza.email || baseProfile.email,
+          website: liveHamza.website || baseProfile.website,
+          instagram: liveHamza.instagram || baseProfile.instagram,
+          facebook: liveHamza.facebook || baseProfile.facebook,
+          tiktok: liveHamza.tiktok || baseProfile.tiktok,
+          linkedin: liveHamza.linkedin || baseProfile.linkedin,
+          google_maps_url: liveHamza.google_maps_url || baseProfile.google_maps_url,
+          google_review_url: liveHamza.google_review_url || baseProfile.google_review_url,
+          address: liveHamza.address || baseProfile.address,
+        };
+      }
+    }
+
+    // 2. Dynamic sync for other featured profiles if updated in database
+    const dynamicMatch = clients.find(
+      (c) => c.slug.toLowerCase() === baseProfile.slug.toLowerCase() || c.id === baseProfile.id
+    );
+    if (dynamicMatch) {
+      return {
+        ...baseProfile,
+        ...dynamicMatch,
+      };
+    }
+
+    return baseProfile;
+  });
+
+  const [selectedSlug, setSelectedSlug] = useState<string>(sampleProfiles[0]?.slug || 'hamza');
 
   const currentSample =
-    sampleProfiles.find((c) => c.slug === selectedSlug) || sampleProfiles[0] || demoClient;
+    sampleProfiles.find((c) => c.slug === selectedSlug) || sampleProfiles[0];
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
@@ -129,7 +198,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           className="py-16 sm:py-24 border-t border-slate-800/60 bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950 relative"
         >
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto space-y-3.5 mb-12">
+            <div className="text-center max-w-2xl mx-auto space-y-3.5 mb-10">
               <div className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-400 uppercase tracking-widest">
                 <Smartphone className="w-4 h-4" />
                 <span>Interactive Live Showcase</span>
@@ -141,27 +210,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 Explore an authentic live preview of how clients view your digital profile on their smartphone.
               </p>
 
-              {/* Sample Profile Selector Chips */}
-              {sampleProfiles.length > 1 && (
-                <div className="pt-4 flex flex-wrap items-center justify-center gap-2.5">
-                  {sampleProfiles.map((sample) => {
-                    const isSelected = selectedSlug === sample.slug;
-                    return (
-                      <button
-                        key={sample.slug}
-                        onClick={() => setSelectedSlug(sample.slug)}
-                        className={`py-2 px-4 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer ${
-                          isSelected
-                            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg shadow-cyan-500/25 border border-cyan-400/30'
-                            : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800 hover:border-slate-700'
+              {/* 4 Fixed Featured Profile Tabs */}
+              <div className="pt-5 flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 max-w-3xl mx-auto">
+                {sampleProfiles.map((sample) => {
+                  const isSelected = selectedSlug === sample.slug;
+                  return (
+                    <button
+                      key={sample.slug}
+                      id={`preview-tab-${sample.slug}`}
+                      onClick={() => setSelectedSlug(sample.slug)}
+                      className={`group relative py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-2 ${
+                        isSelected
+                          ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-lg shadow-cyan-500/25 border border-cyan-400/40 scale-[1.02]'
+                          : 'bg-slate-900/85 text-slate-300 hover:text-white border border-slate-800/90 hover:border-slate-700 hover:bg-slate-850'
+                      }`}
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-full transition-colors duration-200 ${
+                          isSelected ? 'bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.8)]' : 'bg-slate-600 group-hover:bg-slate-500'
                         }`}
-                      >
-                        {sample.business_name}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+                      />
+                      <span>{sample.business_name}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Phone Mockup with Atmospheric Outer Glow & Drop Shadows */}
@@ -169,24 +242,45 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               {/* Outer Ambient Radial Device Glow */}
               <div className="absolute w-[440px] h-[680px] bg-gradient-to-tr from-cyan-500/15 via-blue-600/15 to-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-              {/* Phone Device Shell */}
-              <div className="relative w-full max-w-[390px] rounded-[48px] bg-slate-900/90 p-3.5 shadow-[0_0_80px_-20px_rgba(6,182,212,0.25)] border-2 border-slate-700/60 backdrop-blur-2xl ring-1 ring-white/10">
-                {/* Speaker Notch / Dynamic Island */}
-                <div className="absolute top-5 left-1/2 -translate-x-1/2 w-28 h-4.5 bg-slate-950 rounded-full z-30 flex items-center justify-center shadow-inner border border-slate-800/80">
-                  <div className="w-3 h-3 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
-                    <div className="w-1 h-1 rounded-full bg-blue-500/60" />
+              {/* Smartphone Graphic / Chassis */}
+              <div className="relative w-full max-w-[370px] sm:max-w-[390px] rounded-[52px] bg-gradient-to-b from-slate-800 via-slate-900 to-slate-950 p-3 sm:p-3.5 shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9),0_0_60px_-15px_rgba(6,182,212,0.25)] border-2 border-slate-700/70 ring-1 ring-white/15">
+                {/* Physical side buttons accents */}
+                <div className="absolute -left-[4px] top-24 w-[3px] h-7 bg-slate-700 rounded-l shadow-sm" />
+                <div className="absolute -left-[4px] top-35 w-[3px] h-11 bg-slate-700 rounded-l shadow-sm" />
+                <div className="absolute -right-[4px] top-28 w-[3px] h-14 bg-slate-700 rounded-r shadow-sm" />
+
+                {/* Top Dynamic Island / Speaker Pill */}
+                <div className="absolute top-4.5 left-1/2 -translate-x-1/2 w-28 h-5 bg-black rounded-full z-30 flex items-center justify-between px-3 shadow-md border border-slate-800/80">
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-950 border border-slate-850 flex items-center justify-center">
+                    <div className="w-1 h-1 rounded-full bg-blue-600/80" />
                   </div>
+                  <div className="w-2 h-2 rounded-full bg-slate-900 border border-slate-800" />
                 </div>
 
-                {/* Inner Screen Viewport */}
-                <div className="relative rounded-[38px] overflow-hidden bg-slate-950 min-h-[640px] max-h-[720px] overflow-y-auto custom-scrollbar border border-slate-800/80 shadow-2xl">
-                  <PublicCard client={currentSample} previewMode={true} />
+                {/* Inner Screen Viewport with Smooth Scrolling and Zero Ugly Scrollbars */}
+                <div className="relative rounded-[42px] overflow-hidden bg-white h-[620px] sm:h-[680px] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border border-slate-800/40 shadow-inner">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentSample.slug}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2, ease: 'easeOut' }}
+                      className="w-full"
+                    >
+                      <PublicCard client={currentSample} previewMode={true} />
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
               </div>
 
+              {/* Ambient Platform Shadow Underneath */}
+              <div className="w-[280px] sm:w-[320px] h-5 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent blur-xl mt-3 rounded-full pointer-events-none" />
+
               {/* Direct Fullscreen Link Button */}
-              <div className="mt-8 flex items-center gap-3 z-10">
+              <div className="mt-6 flex items-center gap-3 z-10">
                 <button
+                  id="open-fullscreen-preview-btn"
                   onClick={() => onNavigateToDemo(currentSample.slug)}
                   className="inline-flex items-center gap-2 py-2.5 px-5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 hover:text-white text-xs font-semibold border border-slate-700/80 hover:border-cyan-500/40 shadow-lg shadow-black/40 transition-all duration-200 active:scale-98 cursor-pointer"
                 >

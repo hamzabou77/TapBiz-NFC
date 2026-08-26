@@ -1,6 +1,30 @@
 import { ClientProfile, SiteSettings } from '../types';
 
-export const INITIAL_CLIENTS: ClientProfile[] = [
+export const FEATURED_SHOWCASE_PROFILES: ClientProfile[] = [
+  {
+    id: 'client-hamza',
+    business_name: 'Hamza | Touchbizz NFC',
+    slug: 'hamza',
+    logo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
+    cover_image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1000&auto=format&fit=crop&q=80',
+    tagline: 'Founder & NFC Digital Profile Specialist',
+    description: 'Smart NFC digital business profiles, custom cards, and frictionless contact sharing for modern entrepreneurs and businesses in Morocco.',
+    phone: '+212620799395',
+    whatsapp: '+212620799395',
+    email: 'boalyhicham@gmail.com',
+    website: 'https://touchbizz.ma',
+    instagram: 'https://instagram.com/touchbizz.ma',
+    facebook: 'https://facebook.com/touchbizz',
+    tiktok: 'https://tiktok.com/@touchbizz',
+    linkedin: 'https://linkedin.com/company/touchbizz',
+    google_maps_url: 'https://maps.google.com/?q=Avenue+Mohammed+V+Gueliz+Marrakech',
+    google_review_url: 'https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4',
+    address: 'Avenue Mohammed V, Guéliz, Marrakech 40000, Morocco',
+    status: 'active',
+    views_count: 520,
+    created_at: '2025-01-10T10:00:00.000Z',
+    updated_at: '2025-02-20T12:00:00.000Z',
+  },
   {
     id: 'client-1',
     business_name: 'Ahmed Car Rental',
@@ -26,28 +50,6 @@ export const INITIAL_CLIENTS: ClientProfile[] = [
     updated_at: '2025-02-10T14:30:00.000Z',
   },
   {
-    id: 'client-2',
-    business_name: 'Yassine Private Driver & Rental',
-    slug: 'yassine-rental',
-    logo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80',
-    cover_image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1000&auto=format&fit=crop&q=80',
-    tagline: 'VIP Airport Transfers & Desert Excursions',
-    description: 'Private chauffeur services, airport shuttles, and customized luxury day trips to Agafay, Ourika Valley, and Essaouira.',
-    phone: '+212620799395',
-    whatsapp: '+212620799395',
-    email: 'boalyhicham@gmail.com',
-    website: 'https://yassinerental.com',
-    instagram: 'https://instagram.com/yassine_transfers',
-    facebook: 'https://facebook.com/yassinetransport',
-    google_maps_url: 'https://maps.google.com/?q=Marrakech+Menara+Airport',
-    google_review_url: 'https://search.google.com/local/writereview?placeid=ChIJN1t_tDeuEmsRUsoyG83frY4',
-    address: 'Hivernage, Marrakech 40000, Morocco',
-    status: 'active',
-    views_count: 189,
-    created_at: '2025-01-20T11:20:00.000Z',
-    updated_at: '2025-02-15T09:15:00.000Z',
-  },
-  {
     id: 'client-3',
     business_name: 'Marrakech Luxury Cars',
     slug: 'marrakech-cars',
@@ -70,6 +72,8 @@ export const INITIAL_CLIENTS: ClientProfile[] = [
     updated_at: '2025-02-18T16:45:00.000Z',
   }
 ];
+
+export const INITIAL_CLIENTS: ClientProfile[] = FEATURED_SHOWCASE_PROFILES;
 
 export const INITIAL_SETTINGS: SiteSettings = {
   site_name: 'Touchbizz',
