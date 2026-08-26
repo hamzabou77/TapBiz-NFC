@@ -94,8 +94,8 @@ export const PublicCard: React.FC<PublicCardProps> = ({ client, previewMode = fa
           </button>
         </div>
 
-        {/* 1. Cover Banner with Dark Gradient Overlay */}
-        <div className="h-40 sm:h-48 w-full bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 relative overflow-hidden">
+        {/* 1. Cover Banner */}
+        <div className="h-40 sm:h-48 w-full bg-slate-900 relative overflow-hidden">
           {client.cover_image && (
             <img
               src={client.cover_image}
@@ -104,11 +104,8 @@ export const PublicCard: React.FC<PublicCardProps> = ({ client, previewMode = fa
             />
           )}
 
-          {/* Dark gradient overlay so top controls & badges stand out crisply */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/25 to-black/75 backdrop-blur-[0.5px]" />
-
           {/* NFC Tap Indicator Badge */}
-          <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/45 backdrop-blur-md text-white text-[11px] font-semibold tracking-wide border border-white/20 shadow-md">
+          <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/50 text-white text-[11px] font-semibold tracking-wide border border-white/20 shadow-md">
             <Radio className="w-3 h-3 text-cyan-400 animate-pulse" />
             <span>NFC Active</span>
           </div>
