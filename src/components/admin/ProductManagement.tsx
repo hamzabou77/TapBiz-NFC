@@ -235,7 +235,7 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({
               `Bonjour Touchbizz, je souhaite commander : ${product.title} (${product.price} MAD)`
             )}`;
 
-            const displayImage =
+            const rawDisplayImage =
               (product.imageUrls && product.imageUrls[0]) ||
               product.imageUrl ||
               'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80';
@@ -247,12 +247,18 @@ export const ProductManagement: React.FC<ProductManagementProps> = ({
                 className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group"
               >
                 {/* Product Image & Badges */}
-                <div className="relative aspect-[16/10] bg-slate-100 overflow-hidden">
+                <div className="relative aspect-[16/10] bg-slate-100 overflow-hidden flex items-center justify-center">
                   <img
-                    src={displayImage}
-                    alt={product.title}
+                    src={rawDisplayImage}
+                    alt=""
+                    aria-label={product.title}
                     referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src =
+                        'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80';
+                    }}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 select-none"
                   />
                   <div className="absolute top-3 left-3 flex items-center gap-1.5">
                     <span className="py-1 px-2.5 rounded-lg bg-white/90 backdrop-blur-md text-[11px] font-bold text-slate-800 shadow-sm">

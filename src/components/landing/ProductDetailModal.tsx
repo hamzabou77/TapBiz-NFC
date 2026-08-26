@@ -34,19 +34,47 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   if (!isOpen || !product) return null;
 
-  const images = product.imageUrls && product.imageUrls.length > 0
+  const DEFAULT_FALLBACK_MODAL = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80';
+  const [modalImageErrorMap, setModalImageErrorMap] = useState<Record<number, boolean>>({});
+
+  const sanitizeModalUrl = (url?: string): string => {
+    if (!url || typeof url !== 'string') return DEFAULT_FALLBACK_MODAL;
+    const trimmed = url.trim();
+    if (!trimmed) return DEFAULT_FALLBACK_MODAL;
+    try {
+      return encodeURI(trimmed);
+    } catch {
+      return trimmed;
+    }
+  };
+
+  const rawModalImages = product.imageUrls && product.imageUrls.length > 0
     ? product.imageUrls
-    : [product.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80'];
+    : [product.imageUrl || DEFAULT_FALLBACK_MODAL];
+
+  const images = rawModalImages
+    .map(sanitizeModalUrl)
+    .filter((url) => Boolean(url && url.length > 0));
+
+  const safeImages = images.length > 0 ? images : [DEFAULT_FALLBACK_MODAL];
 
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setActiveImageIndex((prev) => (prev + 1) % images.length);
+    setActiveImageIndex((prev) => (prev + 1) % safeImages.length);
   };
 
   const prevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    setActiveImageIndex((prev) => (prev - 1 + safeImages.length) % safeImages.length);
   };
+
+  const handleModalImageError = (index: number) => {
+    setModalImageErrorMap((prev) => ({ ...prev, [index]: true }));
+  };
+
+  const currentModalSrc = modalImageErrorMap[activeImageIndex]
+    ? DEFAULT_FALLBACK_MODAL
+    : safeImages[activeImageIndex] || DEFAULT_FALLBACK_MODAL;
 
   const whatsappPhone = (settings.contact_whatsapp || '+212620799395').replace(/[^0-9]/g, '') || '212620799395';
   const orderMessage = encodeURIComponent(
@@ -88,12 +116,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           {/* Scrollable Content */}
           <div className="overflow-y-auto flex-1 p-4 sm:p-6 md:p-8 space-y-6">
             {/* Image Gallery Showcase */}
-            <div className="relative aspect-[16/10] bg-slate-900 rounded-2xl overflow-hidden group shadow-inner">
+            <div className="relative aspect-[16/10] bg-slate-900 rounded-2xl overflow-hidden group shadow-inner flex items-center justify-center select-none">
               <img
-                src={images[activeImageIndex]}
-                alt={product.title}
+                src={currentModalSrc}
+                alt=""
+                aria-label={product.title}
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover transition-all duration-300"
+                loading="lazy"
+                onError={() => handleModalImageError(activeImageIndex)}
+                className="w-full h-full object-cover object-center transition-all duration-300 select-none"
               />
 
               {/* Badges */}

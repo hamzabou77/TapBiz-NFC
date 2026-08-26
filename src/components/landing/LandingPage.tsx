@@ -116,7 +116,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   return (
     <div
       id="landing-page-root"
-      className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-[#0066FF] selection:text-white flex flex-col relative pb-16 md:pb-0"
+      className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased selection:bg-[#0066FF] selection:text-white flex flex-col relative pb-24 md:pb-0"
     >
       {/* 1. Sticky Modern Header with Brand & Language Switcher */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/80 transition-all shadow-2xs">

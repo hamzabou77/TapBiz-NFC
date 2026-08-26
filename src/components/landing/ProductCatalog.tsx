@@ -28,6 +28,20 @@ interface ProductCardProps {
   onOpenDetails: (product: Product) => void;
 }
 
+const DEFAULT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80';
+
+// Helper to sanitize and format image URLs cleanly
+const sanitizeImageUrl = (url?: string): string => {
+  if (!url || typeof url !== 'string') return DEFAULT_FALLBACK_IMAGE;
+  const trimmed = url.trim();
+  if (!trimmed) return DEFAULT_FALLBACK_IMAGE;
+  try {
+    return encodeURI(trimmed);
+  } catch {
+    return trimmed;
+  }
+};
+
 const ProductCardItem: React.FC<ProductCardProps> = ({
   product,
   whatsappPhone,
@@ -35,21 +49,36 @@ const ProductCardItem: React.FC<ProductCardProps> = ({
   onOpenDetails,
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
+  const [imageErrorMap, setImageErrorMap] = useState<Record<number, boolean>>({});
 
-  const images =
+  const rawImages =
     product.imageUrls && product.imageUrls.length > 0
       ? product.imageUrls
-      : [product.imageUrl || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80'];
+      : [product.imageUrl || DEFAULT_FALLBACK_IMAGE];
+
+  const images = rawImages
+    .map(sanitizeImageUrl)
+    .filter((url) => Boolean(url && url.length > 0));
+
+  const safeImages = images.length > 0 ? images : [DEFAULT_FALLBACK_IMAGE];
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    setCurrentImageIndex((prev) => (prev + 1) % safeImages.length);
   };
 
   const handlePrev = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    setCurrentImageIndex((prev) => (prev - 1 + safeImages.length) % safeImages.length);
   };
+
+  const handleImageError = (index: number) => {
+    setImageErrorMap((prev) => ({ ...prev, [index]: true }));
+  };
+
+  const currentSrc = imageErrorMap[currentImageIndex]
+    ? DEFAULT_FALLBACK_IMAGE
+    : safeImages[currentImageIndex] || DEFAULT_FALLBACK_IMAGE;
 
   const orderMessage = encodeURIComponent(
     lang === 'fr'
@@ -68,18 +97,21 @@ const ProductCardItem: React.FC<ProductCardProps> = ({
       id={`product-card-${product.id}`}
       className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col justify-between group"
     >
-      {/* 1. Image Carousel (Exact Match to Screenshot) */}
-      <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden select-none">
+      {/* 1. Image Carousel Container with aspect-square & clean fallback */}
+      <div className="relative w-full aspect-square bg-slate-100 overflow-hidden rounded-t-xl select-none flex items-center justify-center">
         <img
-          src={images[currentImageIndex]}
-          alt={product.title}
+          src={currentSrc}
+          alt=""
+          aria-label={product.title}
           referrerPolicy="no-referrer"
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103"
+          loading="lazy"
+          onError={() => handleImageError(currentImageIndex)}
+          className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-103 select-none"
         />
 
         {/* Top-Left Badge (e.g. CLASSIQUE, SOCIAL) */}
         {product.badge && (
-          <div className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 z-10">
+          <div className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 z-10 pointer-events-none">
             <span className="py-0.5 px-2 rounded-md bg-white/95 backdrop-blur-md text-[9px] sm:text-[10px] font-black text-[#0066FF] shadow-xs uppercase tracking-wider">
               {product.badge}
             </span>
@@ -87,7 +119,7 @@ const ProductCardItem: React.FC<ProductCardProps> = ({
         )}
 
         {/* Left & Right Circular Arrow Buttons */}
-        {images.length > 1 && (
+        {safeImages.length > 1 && (
           <>
             <button
               onClick={handlePrev}
@@ -106,7 +138,7 @@ const ProductCardItem: React.FC<ProductCardProps> = ({
 
             {/* Pagination Dots (Active: elongated blue bar, inactive: white dots) */}
             <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-1 z-10 pointer-events-none">
-              {images.map((_, idx) => (
+              {safeImages.map((_, idx) => (
                 <span
                   key={idx}
                   className={`transition-all duration-300 rounded-full ${
@@ -122,28 +154,28 @@ const ProductCardItem: React.FC<ProductCardProps> = ({
       </div>
 
       {/* 2. Card Body Content */}
-      <div className="p-3 sm:p-4.5 flex-1 flex flex-col justify-between space-y-2.5 sm:space-y-3">
-        <div className="space-y-1 sm:space-y-1.5">
+      <div className="p-2.5 sm:p-4.5 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3">
+        <div className="space-y-0.5 sm:space-y-1.5">
           {/* Category in small uppercase blue text */}
-          <span className="text-[10px] sm:text-xs font-bold text-[#0066FF] uppercase tracking-wider block">
+          <span className="text-[9px] sm:text-xs font-bold text-[#0066FF] uppercase tracking-wider block truncate">
             {displayCategory}
           </span>
 
           {/* Product Title */}
-          <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 leading-snug line-clamp-1 sm:line-clamp-2">
+          <h3 className="text-xs sm:text-sm md:text-base font-bold text-slate-900 leading-snug line-clamp-2 h-[2.5em] sm:h-auto">
             {product.title}
           </h3>
 
           {/* Price Area: "À partir de" above price, price in black, MAD in green */}
           <div className="pt-0.5">
-            <span className="text-[10px] sm:text-xs text-slate-400 font-medium block">
+            <span className="text-[9px] sm:text-xs text-slate-400 font-medium block">
               {lang === 'fr' ? 'À partir de' : 'Starting at'}
             </span>
             <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-base sm:text-lg md:text-xl font-black text-slate-950 tracking-tight">
+              <span className="text-sm sm:text-lg md:text-xl font-black text-slate-950 tracking-tight">
                 {product.price}
               </span>
-              <span className="text-xs sm:text-sm md:text-base font-black text-[#10B981]">
+              <span className="text-[11px] sm:text-sm md:text-base font-black text-[#10B981]">
                 MAD
               </span>
             </div>
@@ -157,17 +189,17 @@ const ProductCardItem: React.FC<ProductCardProps> = ({
             href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full py-2 sm:py-2.5 px-3 rounded-full bg-[#0066FF] hover:bg-blue-700 active:scale-98 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1 shadow-sm shadow-blue-600/20 transition-all cursor-pointer text-center"
+            className="w-full py-1.5 sm:py-2.5 px-2.5 sm:px-3 rounded-full bg-[#0066FF] hover:bg-blue-700 active:scale-98 text-white font-bold text-[11px] sm:text-sm flex items-center justify-center gap-1 shadow-sm shadow-blue-600/20 transition-all cursor-pointer text-center"
           >
             <span>{lang === 'fr' ? 'Commander' : 'Order'}</span>
-            <span className="text-xs font-black ml-0.5">&gt;</span>
+            <span className="text-[10px] sm:text-xs font-black ml-0.5">&gt;</span>
           </a>
 
           {/* Secondary Button: White background with thin border "Voir détails" */}
           <button
             type="button"
             onClick={() => onOpenDetails(product)}
-            className="w-full py-1.5 sm:py-2 px-3 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold text-[11px] sm:text-xs md:text-sm flex items-center justify-center transition-colors cursor-pointer"
+            className="w-full py-1 sm:py-2 px-2.5 sm:px-3 rounded-full bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold text-[10px] sm:text-xs md:text-sm flex items-center justify-center transition-colors cursor-pointer"
           >
             <span>{lang === 'fr' ? 'Voir détails' : 'View details'}</span>
           </button>
