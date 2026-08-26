@@ -116,21 +116,21 @@ export const PublicCard: React.FC<PublicCardProps> = ({ client, previewMode = fa
 
         {/* Profile Card Main Body */}
         <div className="relative px-5 sm:px-6 pt-0 pb-6 text-center">
-          {/* 2. Floating Avatar with Sleek Border Ring & Drop-Shadow */}
-          <div className="relative -mt-16 sm:-mt-20 inline-block mb-3">
-            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl p-1 bg-white shadow-[0_16px_35px_-8px_rgba(0,0,0,0.25)] ring-4 ring-white/95 mx-auto overflow-hidden bg-slate-50 flex items-center justify-center">
+          {/* 2. Floating Avatar with Sleek Circular Border & Drop-Shadow */}
+          <div className="relative -mt-14 sm:-mt-16 inline-block mb-3">
+            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-2 border-white shadow-lg mx-auto overflow-hidden bg-slate-100 flex items-center justify-center">
               {client.logo ? (
                 <img
                   src={client.logo}
                   alt={client.business_name}
-                  className="w-full h-full object-cover rounded-[20px]"
+                  className="w-full h-full object-cover rounded-full"
                   onError={(e) => {
                     (e.currentTarget as HTMLImageElement).src =
                       'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=400&auto=format&fit=crop&q=80';
                   }}
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-600 rounded-[20px] flex items-center justify-center text-white font-black text-3xl shadow-inner">
+                <div className="w-full h-full bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-600 rounded-full flex items-center justify-center text-white font-black text-3xl shadow-inner">
                   {client.business_name.charAt(0)}
                 </div>
               )}
@@ -138,10 +138,10 @@ export const PublicCard: React.FC<PublicCardProps> = ({ client, previewMode = fa
 
             {/* Verified Profile Badge */}
             <div
-              className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-lg border-2 border-white ring-1 ring-blue-500/20"
+              className="absolute bottom-0 right-0 p-1.5 rounded-full bg-blue-600 text-white shadow-md border-2 border-white"
               title="Verified Touchbizz Profile"
             >
-              <ShieldCheck className="w-4 h-4" />
+              <ShieldCheck className="w-3.5 h-3.5" />
             </div>
           </div>
 
